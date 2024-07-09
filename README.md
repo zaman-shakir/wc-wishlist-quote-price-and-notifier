@@ -1,0 +1,1 @@
+# woocommerce-wishlist-quote-price-and-notifier
