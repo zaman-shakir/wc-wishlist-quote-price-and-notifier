@@ -156,7 +156,6 @@ final class WC_Wishlist_Quote_Price_and_Notifier
 
         if (!$checkWC) {
             // if woocommerce is not installed, display an admin notice
-            $admin_notice = new Triplea\WcTripleaCryptoPayment\Admin_Notice();
             $admin_notice = new ZamanShakir\WishlistQuotePriceAndNotifier\Admin\Admin_Notice();
             add_action('admin_notices', [$admin_notice, 'check_require_plugin_notice']);
 
