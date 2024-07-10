@@ -1,0 +1,12 @@
+{
+    "name": "zamanshakir/wishlist-quote-price-and-notifier",
+    "description": "A WooCommerce plugin for wishlist, quote, price, and notifier functionalities.",
+    "type": "wordpress-plugin",
+    "autoload": {
+        "psr-4": {
+            "Zamanshakir\\WishlistQuotePriceAndNotifier\\": "includes/"
+        }
+    },
+    "minimum-stability": "stable",
+    "require": {}
+}
