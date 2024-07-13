@@ -6,5 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Zamanshakir\\WishlistQuotePriceAndNotifier\\' => array($baseDir . '/includes'),
+    'Shakir\\WishlistQuotePriceAndNotifier\\' => array($baseDir . '/includes'),
 );

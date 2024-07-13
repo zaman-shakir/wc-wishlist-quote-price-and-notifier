@@ -1,4 +1,9 @@
 <?php
+
+namespace Shakir\WishlistQuotePriceAndNotifier\Installer;
+
+use Shakir\WishlistQuotePriceAndNotifier\Logger as Logger;
+
 /**
  * Class Installer
  * Does stuff when plugin is being installed
@@ -34,6 +39,8 @@ class Installer
      */
     public function load_plugin_textdomain()
     {
+        //Logger::write_log('heee loggs');
+        Logger::get_instance()->write_log('heee loggs', true);
 
         load_plugin_textdomain(
             'wc_wishlist_quote_and_price_notifier',

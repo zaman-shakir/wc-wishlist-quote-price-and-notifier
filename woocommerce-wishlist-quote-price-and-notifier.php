@@ -100,8 +100,8 @@ final class WC_Wishlist_Quote_Price_and_Notifier
     public function check_older_version()
     {
         if (!get_option('wc_wishlist_quote_and_price_notifier_installed')) {
-            // $installer = new Triplea\WcTripleaCryptoPayment\Installer();
-            // $installer->run();
+            $installer = new Shakir\WishlistQuotePriceAndNotifier\Installer\Installer();
+            $installer->run();
 
             // //Set older plugin options into new one
             // $plugin_options           = 'woocommerce_' . 'triplea_payment_gateway' . '_settings';
@@ -135,14 +135,16 @@ final class WC_Wishlist_Quote_Price_and_Notifier
     public function init_plugin()
     {
 
-        // new Triplea\WcTripleaCryptoPayment\Assets();
+        new Shakir\WishlistQuotePriceAndNotifier\Assets\Assets();
+
+        //$installer = Shakir\WishlistQuotePriceAndNotifier\Installer\Installer();
+
         // new Triplea\WcTripleaCryptoPayment\Reviews();
         // new Triplea\WcTripleaCryptoPayment\Triplea_Hooks();
         // $this->appsero_init_tracker_triplea_cryptocurrency_payment_gateway_for_woocommerce();
         // add_filter('woocommerce_payment_gateways', [$this, 'triplea_wc_add_gateway_class']);
         // add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_extra_links']);
     }
-
 
     /**
      * Do stuff upon plugin activation
@@ -156,12 +158,12 @@ final class WC_Wishlist_Quote_Price_and_Notifier
 
         if (!$checkWC) {
             // if woocommerce is not installed, display an admin notice
-            $admin_notice = new ZamanShakir\WishlistQuotePriceAndNotifier\Admin\Admin_Notice();
+            $admin_notice = new Shakir\WishlistQuotePriceAndNotifier\Admin\Admin_Notice();
             add_action('admin_notices', [$admin_notice, 'check_require_plugin_notice']);
 
         } else {
-            // $installer = new Triplea\WcTripleaCryptoPayment\Installer();
-            // $installer->run();
+            $installer = new Shakir\WishlistQuotePriceAndNotifier\Installer\Installer();
+            $installer->run();
 
             // //Set older plugin options into new one
             // $plugin_options           = 'woocommerce_' . 'triplea_payment_gateway' . '_settings';
@@ -182,6 +184,16 @@ final class WC_Wishlist_Quote_Price_and_Notifier
         }
     }
 
-
-
 }
+/**
+ * Initializes the main plugin
+ *
+ * @return \WC_Wishlist_Quote_Price_and_Notifier
+ */
+function wc_wishlist_quote_price_and_notifier()
+{
+    return WC_Wishlist_Quote_Price_and_Notifier::init();
+}
+
+// kick-off the plugin
+wc_wishlist_quote_price_and_notifier();

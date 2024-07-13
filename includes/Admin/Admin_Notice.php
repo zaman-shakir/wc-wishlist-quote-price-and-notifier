@@ -1,6 +1,6 @@
 <?php
 
-namespace ZamanShakir\WishlistQuotePriceAndNotifier\Admin;
+namespace Shakir\WishlistQuotePriceAndNotifier\Admin;
 
 /**
  * Class Admin_Notice
@@ -20,7 +20,7 @@ class Admin_Notice
 
         $notice = sprintf(
             /* translators: 1: Plugin name 2: WC title & installation link 3: WCS title & installation link */
-            __('%1$s requires %2$s & %3$s to be installed and activated to function properly.', 'wc-triplea-crypto-payment'),
+            __('%1$s requires %2$s & %3$s to be installed and activated to function properly.', 'wc-wishlist-quote-and-price-notifier'),
             '<strong>' . __('Wishlist Quote Price and Notifier for WooCommerce', 'wc-wishlist-quote-and-price-notifier') . '</strong>',
             '<a href="' . esc_url($wc_url) . '" target="_blank">' . $wc_title . '</a>'
         );
