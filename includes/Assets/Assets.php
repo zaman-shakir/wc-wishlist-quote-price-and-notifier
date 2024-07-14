@@ -2,11 +2,14 @@
 
 namespace Shakir\WishlistQuotePriceAndNotifier\Assets;
 
+use Shakir\WishlistQuotePriceAndNotifier\Logger;
+
 /**
  * Loads plugin assets
  */
 class Assets
 {
+    protected $logger;
     /**
      * Class constructor
      */
@@ -14,6 +17,8 @@ class Assets
     {
         add_action('wp_enqueue_scripts', [ $this, 'register_assets' ]);
         add_action('admin_enqueue_scripts', [ $this, 'register_assets' ]);
+        $this->logger = Logger::get_instance();
+        $this->logger->write_log("Plugin assets loaded", true);
     }
 
     /**
@@ -30,13 +35,19 @@ class Assets
             $deps = isset($script['deps']) ? $script['deps'] : false;
 
             wp_register_script($handle, $script['src'], $deps, $script['version'], true);
+            wp_enqueue_script($handle); // Enqueue the script
+
         }
 
         foreach ($styles as $handle => $style) {
             $deps = isset($style['deps']) ? $style['deps'] : false;
 
             wp_register_style($handle, $style['src'], $deps, $style['version']);
+            wp_enqueue_style($handle); // Enqueue the style
+
         }
+        // Enqueue Dashicons
+        //wp_enqueue_style('dashicons');
     }
     /**
      * All available scripts
@@ -46,9 +57,9 @@ class Assets
     public function get_scripts()
     {
         return [
-            'wctriplea-checkout-script' => [
-                'src'     => WC_WISHLIST_QUOTE_PRICE_AND_NOTIFIER_ASSETS . '/js/cart.js',
-                'version' => filemtime(WC_WISHLIST_QUOTE_PRICE_AND_NOTIFIER_PATH . '/assets/js/cart.js'),
+            'wqpn-checkout-script' => [
+                'src'     => WC_WISHLIST_QUOTE_PRICE_AND_NOTIFIER_ASSETS . '/js/wishlist.js',
+                'version' => filemtime(WC_WISHLIST_QUOTE_PRICE_AND_NOTIFIER_PATH . '/assets/js/wishlist.js'),
                 'deps'    => [ 'jquery' ]
             ],
         ];
@@ -62,11 +73,11 @@ class Assets
     public function get_styles()
     {
         return [
-            'wctriplea-admin-style' => [
+            'wqpn-admin-style' => [
                 'src'     => WC_WISHLIST_QUOTE_PRICE_AND_NOTIFIER_ASSETS . '/css/admin.css',
                 'version' => filemtime(WC_WISHLIST_QUOTE_PRICE_AND_NOTIFIER_PATH . '/assets/css/admin.css'),
             ],
-            'wctriplea-checkout-style' => [
+            'wqpn-checkout-style' => [
                 'src'     => WC_WISHLIST_QUOTE_PRICE_AND_NOTIFIER_ASSETS . '/css/cart.css',
                 'version' => filemtime(WC_WISHLIST_QUOTE_PRICE_AND_NOTIFIER_PATH . '/assets/css/cart.css'),
             ]

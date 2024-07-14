@@ -103,23 +103,6 @@ final class WC_Wishlist_Quote_Price_and_Notifier
             $installer = new Shakir\WishlistQuotePriceAndNotifier\Installer\Installer();
             $installer->run();
 
-            // //Set older plugin options into new one
-            // $plugin_options           = 'woocommerce_' . 'triplea_payment_gateway' . '_settings';
-            // $plugin_settings_defaults = array();
-            // $plugin_settings          = get_option($plugin_options, $plugin_settings_defaults);
-
-            // $new_plugin_settings = [
-            //     'merchant_key'       => (isset($plugin_settings['triplea_btc2fiat_merchant_key']) && !empty($plugin_settings['triplea_btc2fiat_merchant_key'])) ? $plugin_settings['triplea_btc2fiat_merchant_key'] : '',
-            //     'client_id'          => (isset($plugin_settings['triplea_btc2fiat_client_id']) && !empty($plugin_settings['triplea_btc2fiat_client_id'])) ? $plugin_settings['triplea_btc2fiat_client_id'] : '',
-            //     'client_secret'      => (isset($plugin_settings['triplea_btc2fiat_client_secret']) && !empty($plugin_settings['triplea_btc2fiat_client_secret'])) ? $plugin_settings['triplea_btc2fiat_client_secret'] : '',
-            //     'oauth_token'        => (isset($plugin_settings['triplea_btc2fiat_oauth_token']) && !empty($plugin_settings['triplea_btc2fiat_oauth_token'])) ? $plugin_settings['triplea_btc2fiat_oauth_token'] : '',
-            //     'oauth_token_expiry' => (isset($plugin_settings['triplea_btc2fiat_oauth_token_expiry']) && !empty($plugin_settings['triplea_btc2fiat_oauth_token_expiry'])) ? $plugin_settings['triplea_btc2fiat_oauth_token_expiry'] : '',
-            //     'debug_log'          => (isset($plugin_settings['debug_log_enabled']) && !empty($plugin_settings['debug_log_enabled'])) ? $plugin_settings['debug_log_enabled'] : '',
-            //     'crypto_text'        => (isset($plugin_settings['triplea_bitcoin_text_custom_value']) && !empty($plugin_settings['triplea_bitcoin_text_custom_value'])) ? $plugin_settings['triplea_bitcoin_text_custom_value'] : '',
-            //     'crypto_logo'        => 'show_logo',
-            //     'enabled'            => (isset($plugin_settings['enabled']) && !empty($plugin_settings['enabled'])) ? $plugin_settings['enabled'] : 'yes',
-            // ];
-            // update_option($plugin_options, $new_plugin_settings);
         } else {
             if (get_option('wc_wishlist_quote_and_price_notifier_version') < self::version) {
                 update_option('wc_wishlist_quote_and_price_notifier_version', self::version);
@@ -134,16 +117,10 @@ final class WC_Wishlist_Quote_Price_and_Notifier
     */
     public function init_plugin()
     {
+        var_dump("plugin loadded");
+        //new Shakir\WishlistQuotePriceAndNotifier\Assets\Assets();
+        Shakir\WishlistQuotePriceAndNotifier\Frontend\Frontend::get_instance();
 
-        new Shakir\WishlistQuotePriceAndNotifier\Assets\Assets();
-
-        //$installer = Shakir\WishlistQuotePriceAndNotifier\Installer\Installer();
-
-        // new Triplea\WcTripleaCryptoPayment\Reviews();
-        // new Triplea\WcTripleaCryptoPayment\Triplea_Hooks();
-        // $this->appsero_init_tracker_triplea_cryptocurrency_payment_gateway_for_woocommerce();
-        // add_filter('woocommerce_payment_gateways', [$this, 'triplea_wc_add_gateway_class']);
-        // add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_extra_links']);
     }
 
     /**

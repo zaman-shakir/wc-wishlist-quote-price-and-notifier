@@ -1,0 +1,27 @@
+.wqpn-wishlist-button {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 16px; /* Adjust as needed */
+    padding: 5px; /* Optional: add some padding for better spacing */
+}
+
+.wqpn-wishlist-button::before {
+    display: inline-block;
+    width: 24px; /* Adjust as needed */
+    height: 24px; /* Adjust as needed */
+    margin-right: 8px; /* Adjust as needed */
+    background-size: contain;
+    background-repeat: no-repeat;
+    content: '';
+}
+
+.wqpn-wishlist-button.wqpn-wishlist-empty::before {
+    background-image: url('../images/empty-wishlist.svg'); /* Adjust path as needed */
+}
+.wqpn-wishlist-button.wqpn-wishlist-full::before {
+    background-image: url('../images/added-wishlist.svg'); /* Adjust path as needed */
+}
+.wqpn-wishlit{
+    margin-bottom: 10px;
+}
