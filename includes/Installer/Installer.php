@@ -40,7 +40,7 @@ class Installer
     public function load_plugin_textdomain()
     {
         //Logger::write_log('heee loggs');
-        Logger::get_instance()->write_log('heee loggs', true);
+        // Logger::get_instance()->write_log('heee loggs', true);
 
         load_plugin_textdomain(
             'wc_wishlist_quote_and_price_notifier',

@@ -21,7 +21,7 @@ class WishlistButton
         //    'ajax_url' => admin_url('admin-ajax.php')
         //]);
     }
-    public function display_wishlist_button()
+    public function display_wishlist_button2()
     {
         global $product;
 
@@ -29,16 +29,38 @@ class WishlistButton
         $is_wishlisted = $this->is_wishlisted($product_id);
         $icon = $is_wishlisted ? 'wqpn-wishlist-full' : 'wqpn-wishlist-empty';
         $nonce =  wp_create_nonce('_wishlist_quote_price_notify');
-        $data_url = 'wc_ajax_click_wishlist_button';
+        $action = 'wc_ajax_click_wishlist_button';
+        $url = esc_url(admin_url('admin-ajax.php'));
         $label = $is_wishlisted ? __('Remove from Wishlist', 'wishlist') : __('Add to Wishlist', 'wishlist');
 
         echo sprintf(
-            '<div class="wqpn-wishlit"><span class="wqpn-wishlist-button %s" data-product-id="%d" data-nonce="%s" data-url="%s"> %s</span></div>',
+            '<div class="wqpn-wishlit"><span class="wqpn-wishlist-button %s" data-product-id="%d" data-nonce="%s" data-action="%s" data-url="%s"> %s</span></div>',
             esc_attr($icon),
             esc_attr($product_id),
             esc_attr($nonce),
-            esc_attr($data_url),
+            esc_attr($action),
+            esc_attr($url),
             esc_html($label),
+        );
+    }
+    public function display_wishlist_button()
+    {
+        global $product;
+
+        $product_id = $product->get_id();
+        $is_wishlisted = $this->is_wishlisted($product_id);
+        $icon = $is_wishlisted ? 'wqpn-wishlist-full' : 'wqpn-wishlist-empty';
+        $nonce = wp_create_nonce('_wishlist_quote_price_notify');
+        $url = esc_url(admin_url('admin-ajax.php'));
+        $label = $is_wishlisted ? __('Remove from Wishlist', 'wishlist') : __('Add to Wishlist', 'wishlist');
+
+        echo sprintf(
+            '<div class="wqpn-wishlist"><span class="wqpn-wishlist-button %s" data-product-id="%d" data-nonce="%s" data-url="%s"> %s</span></div>',
+            esc_attr($icon),
+            esc_attr($product_id),
+            esc_attr($nonce),
+            esc_attr($url),
+            esc_html($label)
         );
     }
     private function is_wishlisted($product_id)

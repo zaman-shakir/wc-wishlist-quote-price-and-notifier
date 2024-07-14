@@ -25,10 +25,10 @@ class Logger
     {
         if (! self::$instance) {
 
-            var_dump("new logger created");
+            //  var_dump("new logger created");
             self::$instance = new self();
         }
-        var_dump("old logger returned");
+        //var_dump("old logger returned");
         return self::$instance;
     }
 

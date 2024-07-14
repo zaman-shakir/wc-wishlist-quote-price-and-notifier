@@ -28,6 +28,8 @@ class Frontend
     {
         if (self::$instance === null) {
             self::$instance = new self();
+            Logger::get_instance()->write_log('Frontend instance created', true);
+
         } else {
             Logger::get_instance()->write_log('Frontend instance reused', true);
         }
@@ -37,8 +39,8 @@ class Frontend
     protected function load_frontend_class()
     {
         $this->logger->write_log('Frontend enabled', true);
-        // new WqpnHooks();
-        // new WishlistButton();
-        // new WishlistButtonHandler();
+        new WqpnHooks();
+        new WishlistButton();
+        new WishlistButtonHandler();
     }
 }
