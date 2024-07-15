@@ -74,6 +74,7 @@
                 success: function (response) {
                     try {
                         var responseData = JSON.parse(response);
+                        console.log("Response Data:", responseData);
                         wishlist_callback(responseData);
                     } catch (err) {
                         console.warn('Error parsing JSON response:', err);
