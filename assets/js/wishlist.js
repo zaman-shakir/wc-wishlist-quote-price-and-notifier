@@ -51,6 +51,40 @@
             });
         });
     });
+    // Remove button handler for wishlist page
+    document.querySelectorAll('.wqpn-remove-button').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var productId = this.dataset.productId;
+            var nonce = this.dataset.nonce; // You need to pass the nonce to the button data attributes
+            var action = 'click_wishlist_button';
+            var wishlistAction = 'remove_from_wishlist';
+            var url = this.dataset.url; // Ensure the URL is passed to the button data attributes
+            var data = {
+                action: action,
+                product_id: productId,
+                _wpnonce: nonce,
+                wishlist_action: wishlistAction
+            };
+            console.log("Request Data:", data);
+
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: data,
+                success: function (response) {
+                    try {
+                        var responseData = JSON.parse(response);
+                        wishlist_callback(responseData);
+                    } catch (err) {
+                        console.warn('Error parsing JSON response:', err);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX request failed:', status, error);
+                }
+            });
+        });
+    });
 
 })(jQuery);
 

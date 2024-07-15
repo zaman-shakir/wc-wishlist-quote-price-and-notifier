@@ -39,6 +39,7 @@ class Frontend
     protected function load_frontend_class()
     {
         $this->logger->write_log('Frontend enabled', true);
+        new WishlistPage();
         new WqpnHooks();
         new WishlistButton();
         new WishlistButtonHandler();

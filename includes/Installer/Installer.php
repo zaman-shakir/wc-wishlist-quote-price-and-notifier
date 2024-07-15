@@ -19,6 +19,25 @@ class Installer
         $this->add_installed_flag();
         $this->add_version();
         $this->load_plugin_textdomain();
+        $this->wqpn_create_wishlist_page();
+    }
+
+    public function wqpn_create_wishlist_page()
+    {
+        // Check if the page already exists
+        $page = get_page_by_path('wqpn-my-wishlist');
+        if ($page) {
+            return; // Page already exists, no need to create it
+        }
+
+        // Create the page
+        $wishlist_page = array(
+            'post_title'    => 'My Wishlist',
+            'post_content'  => '[wqpn_wishlist]', // Shortcode to display wishlist content
+            'post_status'   => 'publish',
+            'post_type'     => 'page',
+        );
+        wp_insert_post($wishlist_page);
     }
 
     public function add_installed_flag()
