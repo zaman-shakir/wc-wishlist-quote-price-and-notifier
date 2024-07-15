@@ -3,16 +3,12 @@
 
     // Callback function for AJAX response
     function wishlist_callback(responseData) {
-        if (responseData.status === 'ok') {
+        if (responseData.status === 201) {
             var button = document.querySelector(`[data-product-id="${responseData.product_id}"]`);
-            if (responseData.wishlist_action === 'add_to_wishlist') {
-                button.classList.remove('wqpn-wishlist-empty');
-                button.classList.add('wqpn-wishlist-full');
-                button.textContent = 'Remove from Wishlist';
-            } else {
-                button.classList.remove('wqpn-wishlist-full');
-                button.classList.add('wqpn-wishlist-empty');
-                button.textContent = 'Add to Wishlist';
+            if (button) {
+                button.classList.remove(responseData.remove_class);
+                button.classList.add(responseData.add_class);
+                button.textContent = responseData.wishlist_action === 'add_to_wishlist' ? 'Remove from Wishlist' : 'Add to Wishlist';
             }
         } else {
             console.error('Failed to perform wishlist action:', responseData.message);

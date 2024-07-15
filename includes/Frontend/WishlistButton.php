@@ -66,8 +66,12 @@ class WishlistButton
     private function is_wishlisted($product_id)
     {
         $user_id = get_current_user_id();
-        $wishlist = get_user_meta($user_id, 'wishlist', true);
 
+        //if ($user_id) {
+        //     $wishlist = get_user_meta($user_id, 'wishlist', true);
+        //} else {
+        $wishlist = isset($_COOKIE['wqpn_wishlist']) ? json_decode(stripslashes($_COOKIE['wqpn_wishlist']), true) : [];
+        //}
         return is_array($wishlist) && in_array($product_id, $wishlist);
     }
     public function toggle_wishlist()
