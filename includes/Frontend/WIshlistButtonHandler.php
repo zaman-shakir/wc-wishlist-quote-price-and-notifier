@@ -99,8 +99,19 @@ class WishlistButtonHandler
         Logger::get_instance()->write_log(wc_print_r($wishlist, $product_id, true), true);
 
         // Add product_id to the wishlist array if not already present
-        if (!in_array($product_id, $wishlist)) {
-            $wishlist[] = $product_id;
+        // if (!in_array($product_id, $wishlist)) {
+        //     $wishlist[] = $product_id;
+        // }
+        // Check if the product is already in the wishlist
+        if (!array_key_exists($product_id, $wishlist)) {
+            // Add the product with the current time
+            $wishlist[$product_id] = [
+                'product_id' => $product_id,
+                'added_time' => time()
+            ];
+
+            // Set the updated wishlist cookie
+            setcookie('wqpn_wishlist', json_encode($wishlist), time() + 3600 * 24 * 30, '/'); // 30 days expiration
         }
         Logger::get_instance()->write_log("after adding item to wishlist in handler", true);
         Logger::get_instance()->write_log(wc_print_r($wishlist, $product_id, true), true);
@@ -113,9 +124,12 @@ class WishlistButtonHandler
         // Retrieve existing wishlist data from cookie or initialize an empty array
         $wishlist = isset($_COOKIE['wqpn_wishlist']) ? json_decode(stripslashes($_COOKIE['wqpn_wishlist']), true) : [];
 
-        // Remove product_id from the wishlist array if present
-        if (($key = array_search($product_id, $wishlist)) !== false) {
-            unset($wishlist[$key]);
+        // Check if the product is in the wishlist and remove it
+        if (isset($wishlist[$product_id])) {
+            unset($wishlist[$product_id]);
+
+            // Update the wishlist cookie
+            setcookie('wqpn_wishlist', json_encode($wishlist), time() + 3600 * 24 * 30, '/'); // 30 days expiration
         }
 
         // Save updated wishlist array to cookie

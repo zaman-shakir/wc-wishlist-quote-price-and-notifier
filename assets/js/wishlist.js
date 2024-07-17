@@ -15,6 +15,16 @@
         }
     }
 
+    function wishlist_page_callback(responseData) {
+        if (responseData.status === 201) {
+            console.log(responseData.product_id);
+            let rowid = "wqpn-row-"+responseData.product_id;
+            document.getElementById(rowid).innerHTML = "";
+        } else {
+            console.error('Failed to perform wishlist action:', responseData.message);
+        }
+
+    }
     // Wishlist Button Click Handler
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.wqpn-wishlist-button').forEach(function (button) {
@@ -52,7 +62,7 @@
         });
     });
     // Remove button handler for wishlist page
-    document.querySelectorAll('.wqpn-remove-button').forEach(function (button) {
+    document.querySelectorAll('.wqpn-wishlish-page-remove').forEach(function (button) {
         button.addEventListener('click', function () {
             var productId = this.dataset.productId;
             var nonce = this.dataset.nonce; // You need to pass the nonce to the button data attributes
@@ -75,7 +85,7 @@
                     try {
                         var responseData = JSON.parse(response);
                         console.log("Response Data:", responseData);
-                        wishlist_callback(responseData);
+                        wishlist_page_callback(responseData);
                     } catch (err) {
                         console.warn('Error parsing JSON response:', err);
                     }

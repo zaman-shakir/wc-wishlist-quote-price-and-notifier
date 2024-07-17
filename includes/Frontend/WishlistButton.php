@@ -67,13 +67,13 @@ class WishlistButton
     {
         $user_id = get_current_user_id();
 
-        //if ($user_id) {
-        //     $wishlist = get_user_meta($user_id, 'wishlist', true);
-        //} else {
+        // Retrieve wishlist from cookies
         $wishlist = isset($_COOKIE['wqpn_wishlist']) ? json_decode(stripslashes($_COOKIE['wqpn_wishlist']), true) : [];
-        //}
-        return is_array($wishlist) && in_array($product_id, $wishlist);
+
+        // Check if the product_id is in the wishlist array
+        return is_array($wishlist) && array_key_exists($product_id, $wishlist);
     }
+
     public function toggle_wishlist()
     {
         if (!is_user_logged_in() || !isset($_POST['product_id'])) {
