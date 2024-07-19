@@ -32,6 +32,74 @@ class WishlistPage
         echo '<tbody>';
 
         foreach ($wishlist as $item) {
+            $product_id = $item['product_id'];
+            $added_time = $item['added_time'];
+
+            $product = wc_get_product($product_id);
+            if (!$product) {
+                continue;
+            }
+
+            $product_title = $product->get_title();
+            $product_price_html = $product->get_price_html();
+            $product_price = $product->get_price();
+            $product_image = $product->get_image();
+            $product_qty = 1; // Default quantity for wishlist, adjust as needed
+            $added_time_formatted = date('F j, Y', strtotime($added_time));
+
+            $stock_status = $product->is_in_stock() ? 'In stock' : 'Out of stock';
+            $stock_class = $product->is_in_stock() ? 'wqpn-in-stock' : 'wqpn-out-stock';
+
+            $subtotal = $product_price * $product_qty;
+
+            $nonce = wp_create_nonce('_wishlist_quote_price_notify');
+            $url = esc_url(admin_url('admin-ajax.php'));
+            $svg = '<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"></path></svg>';
+            $remove_btn = "<div class='wqpn-wishlist-remove wqpn-wishlish-page-remove' data-product-id='{$product_id}' data-nonce='{$nonce}' data-url='{$url}'>" . $svg . "</div>";
+            $update_qty_btn = "<button class='btn wqpn-wishlist-update-qty' data-product-id='{$product_id}' data-nonce='{$nonce}' data-url='{$url}'>Update</button>";
+
+            echo "<tr id='wqpn-row-{$product_id}'>
+            <td class='wqpn-img'>{$product_image}</td>
+            <td class='wqpn-product-details'><strong><a target='_blank' href='{$product->get_permalink()}'>{$product_title}</a></strong><br>{$product_price_html}<br>{$added_time_formatted}<br><span class='wqpn-product-stock {$stock_class}'>{$stock_status}</span></td>
+            <td class='wqpn-product-qty'>
+                <input type='number' class='wqpn-product-qty-input' name='qty[{$product_id}]' value='{$product_qty}' min='1'/>
+            </td>
+            <td class='wqpn-product-subtotal'>". wc_price($subtotal) ."</td>
+            <td class='wqpn-product-remove'>{$remove_btn}</td>
+            </tr>";
+        }
+
+        echo '</tbody></table>';
+        echo '</div>';
+
+        echo '<div class="wqpn-order-summary">
+        <h3>Wishlish Summary</h3>
+        <p>Wishlist total: <span id="wqpn-total"></span></p>
+        <button class=" wqpn-submit-price">Submit a Price for these wishlist products?</button>
+        </div>';
+        echo '</div>';
+
+        return ob_get_clean();
+    }
+
+    public function wqpn_display_wishlist_v1()
+    {
+        // Retrieve wishlist from cookies
+        $wishlist = isset($_COOKIE['wqpn_wishlist']) ? json_decode(stripslashes($_COOKIE['wqpn_wishlist']), true) : [];
+
+        if (empty($wishlist)) {
+            return '<p>Your wishlist is empty.</p>';
+        }
+
+        ob_start();
+
+        // Wishlist Table
+        echo '<div class="wqpn-wishlist-container">';
+        echo '<div class="wqpn-wishlist-table-container">';
+        echo '<table class="wqpn-wishlist-table">';
+        echo '<tbody>';
+
+        foreach ($wishlist as $item) {
 
             $product_id = $item['product_id'];
             $added_time = $item['added_time'];
@@ -77,9 +145,6 @@ class WishlistPage
 
         return ob_get_clean();
     }
-
-
-
     // Function to display wishlist
     public function wqpn_display_wishlist2()
     {

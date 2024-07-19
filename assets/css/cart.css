@@ -28,11 +28,13 @@
     display: flex;
     justify-content: space-between;
     gap: 20px;
+    width: 100%;
 }
 
 .wqpn-wishlist-table-container {
     flex: 1;
     overflow-x: auto;
+    width: 67%;
 }
 
 .wqpn-wishlist-table {
@@ -41,7 +43,8 @@
 }
 
 .wqpn-wishlist-table tbody tr {
-    /* box-shadow: rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em, rgba(0, 0, 0, 0.25) 0px 0.125em 0.5em, rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset;        border-bottom-color: transparent; */
+    /* box-shadow: rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em, rgba(0, 0, 0, 0.25) 0px 0.125em 0.5em, rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset;
+    border-bottom-color: transparent; */
     box-shadow: rgba(9, 30, 66, 0.25) 0px 1px 1px, rgba(9, 30, 66, 0.13) 0px 0px 1px 1px;
     border-bottom-width: 10px;
     border-bottom-style: solid;
@@ -77,7 +80,7 @@
 }
 
 .wqpn-order-summary {
-    width: 300px;
+    width: 33%;
     border: 1px solid #ddd;
     padding: 20px;
 }
@@ -91,12 +94,24 @@
 }
 
 .wqpn-submit-price {
-    background-color: #000;
-    color: #fff;
+    background-color: #FFF;
+    color: #161141;
     border: none;
-    padding: 10px;
+    padding: 14px;
     width: 100%;
     cursor: pointer;
+    border: solid 1px #161141;
+
+}
+.wqpn-submit-price:hover {
+    background-color: #161141 !important;
+    color: #FFF;
+    border: none;
+    padding: 14px;
+    width: 100%;
+    cursor: pointer;
+    border: solid 1px #161141;
+
 }
 
 @media (max-width: 768px) {
