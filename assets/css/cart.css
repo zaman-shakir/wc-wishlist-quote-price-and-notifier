@@ -160,3 +160,33 @@
 #wqpn-price-submit {
     margin-top: 10px;
 }
+.status-tree {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.status-node {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin: 5px 0;
+    background-color: #f9f9f9;
+}
+
+.status-node.active {
+    border-color: #0073aa;
+    background-color: #e0f7fa;
+}
+
+.status-node svg {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.status-node.active svg {
+    fill: #0073aa;
+}

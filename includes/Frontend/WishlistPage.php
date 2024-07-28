@@ -17,36 +17,16 @@ class WishlistPage
     public function wqpn_display_wishlist()
     {
 
-        //get data from transient to see if already offered price data exists
-        // & status is review accepted or rejected
         $user_id = get_current_user_id();
         $all_users_data = get_transient('wqpn_wishlist');
+
         if (isset($all_users_data[$user_id])) {
             $user_data = $all_users_data[$user_id];
             $status = $user_data['status'];
-            $wishlist_price = $user_data['wishlist_price'];
-            var_dump($all_users_data);
-            // (array) [1 element]
-            // 1:
-            // (array) [10 elements]
-            // wishlist_price: (string) "45"
-            // quote_price: (string) "45"
-            // products:
-            // (array) [1 element]
-            // 59:
-            // (array) [4 elements]
-            // product_id: (integer) 59
-            // added_time: (integer) 1722195473
-            // qty: (integer) 1
-            // subtotal: (integer) 45
-            // submitted_time: (string) "2024-07-29 01:44:24"
-            // status: (string) "submitted"
-            // ip_address: (string) "::1"
-            // unique_id: (string) "6c7c96b1-6abd-45ff-9d13-20647301d942"
-            // email: (string) "zaman.shakirdev@gmail.com"
-            // whatsapp: (string) "+1 (473) 451-3366"
-            // telegram: (string) "+1 (749) 915-8748"
-            // Use the status and wishlist price as needed
+
+            if ($status === 'submitted') {
+                return $this->display_submitted_wishlist($user_data);
+            }
         }
 
         $wishlist = $this->get_wishlist_from_cookies();
@@ -66,7 +46,88 @@ class WishlistPage
         //$this->display_price_section($currency_symbol, $currency_position);
         return ob_get_clean();
     }
+    private function display_submitted_wishlist($user_data)
+    {
+        $currency_symbol = get_woocommerce_currency_symbol();
+        $currency_position = get_option('woocommerce_currency_pos');
+        ob_start();
+        // echo $this->format_status_tree($user_data['status']);
+        echo "<div style='display: flex; justify-content: center; margin-top: 20px;'>
+        <h5 style='max-width: 60%; text-align: center; line-height: 1.5;'>
+            Your offered price has been submitted successfully. Please wait while we review your offer. We will contact you shortly with our decision.
+        </h5>
+      </div>";
+        echo '<div class="wqpn-wishlist-container">';
 
+        echo '<div class="wqpn-products"  style="width:58%"><table class="wqpn-wishlist-table"><tbody>';
+        echo "<tr id='wqpn-row'>
+        <td class='wqpn-img'><strong>Product</strong></td>
+        <td class='wqpn-product-details'>
+        &nbsp;
+        </td>
+        <td class='wqpn-product-qty'>  <strong>Qty</strong>
+
+        </td>
+        <td class='wqpn-product-subtotal' id='wqpn-subtotal'><strong>Subtotal</strong></td>
+    </tr>";
+        foreach ($user_data['products'] as $product_id => $item) {
+            $this->display_submitted_wishlist_item($item, $currency_symbol, $currency_position);
+        }
+        echo '</tbody></table></div>';
+
+        // echo '<div class="wqpn-order-summary" style="width:40%">            <h4 style="text-align:center">Your Offered Price Summary</h4>
+        // <div class="wqpn-price-submit-grid" style="display: grid;
+        //     grid-template-columns: 1fr 1fr;
+        //     gap: 10px;
+        //     row-gap: 0px;">
+        //     <div style="text-align:right"><p>Wishlist Total :</p></div><div><p> ' . $this->format_price($user_data['wishlist_price'], $currency_symbol, $currency_position) . '</p></div>
+        //     <div style="text-align:right"><p>Offered Price :</div><div><p>' . $this->format_price($user_data['quote_price'], $currency_symbol, $currency_position) . '</p></div>
+        //     <div style="text-align:right"><p><p>Status :</div><div><p>' .$this->format_status_tree($user_data['status']) . '</p></div>
+        // </div></div>';
+        echo '<div class="wqpn-order-summary" style="width:40%;height:fit-content">
+                    <h4 style="text-align:center">Your Offered Price Summary</h4>
+        <div class="wqpn-price-submit-grid" style="display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            row-gap: 0px;">
+            <div style="text-align:right"><p>Wishlist Total :</p></div><div><p> ' . $this->format_price($user_data['wishlist_price'], $currency_symbol, $currency_position) . '</p></div>
+            <div style="text-align:right"><p>Offered Price :</div><div><p>' . $this->format_price($user_data['quote_price'], $currency_symbol, $currency_position) . '</p></div>
+            <div style="text-align:right"><p><p>Status :</div><div><p>' . esc_html($user_data['status']) . '</p></div>
+        </div></div>';
+
+        return ob_get_clean();
+    }
+
+    private function format_status_tree($status)
+    {
+        $icons = [
+            'review' => '<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><path d="M12 2L3.5 20.5h17L12 2zm0 3.84L18.58 18H5.42L12 5.84zM11 8h2v6h-2V8zm0 8h2v2h-2v-2z"/></svg>',
+            'accepted' => '<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><path d="M10 15.27L4.55 9.81 3.14 11.22 10 18.07l10.36-10.36L18.94 6.27 10 15.27z"/></svg>',
+            'rejected' => '<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><path d="M6 18L18 6M6 6l12 12"/></svg>',
+            'submitted' => '<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><path d="M12 2L1.69 21.73a.99.99 0 001.31 1.27L12 17.9l8.99 5.1a.99.99 0 001.31-1.27L12 2z"/></svg>',
+        ];
+
+        $tree = '<div class="status-tree">';
+        $tree .= '<div class="status-node' . ($status == 'submitted' ? ' active' : '') . '">';
+        $tree .= $icons['submitted'] . ' Submitted';
+        $tree .= '</div>';
+
+        $tree .= '<div class="status-node' . ($status == 'review' ? ' active' : '') . '">';
+        $tree .= $icons['review'] . ' Review';
+        $tree .= '</div>';
+
+        $tree .= '<div class="status-node' . ($status == 'accepted' ? ' active' : '') . '">';
+        $tree .= $icons['accepted'] . ' Accepted';
+        $tree .= '</div>';
+
+        $tree .= '<div class="status-node' . ($status == 'rejected' ? ' active' : '') . '">';
+        $tree .= $icons['rejected'] . ' Rejected';
+        $tree .= '</div>';
+
+        $tree .= '</div>';
+
+        return $tree;
+    }
     private function get_wishlist_from_cookies()
     {
         return isset($_COOKIE['wqpn_wishlist']) ? json_decode(stripslashes($_COOKIE['wqpn_wishlist']), true) : [];
@@ -164,6 +225,50 @@ class WishlistPage
             <td class='wqpn-product-remove'>{$remove_btn}</td>
         </tr>";
         }
+
+    }
+    private function display_submitted_wishlist_item($item, $currency_symbol, $currency_position)
+    {
+
+        $product_id = $item['product_id'];
+        $added_time = $item['added_time'];
+
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            return;
+        }
+
+        $product_title = $product->get_title();
+        $product_price_html = $product->get_price_html();
+        $product_price = $product->get_price();
+        $product_image = $product->get_image();
+        $product_qty = 1; // Default quantity for wishlist, adjust as needed
+        $added_time_formatted = date('F j, Y H:m a', $added_time);
+
+        $stock_status = $product->is_in_stock() ? 'In stock' : 'Out of stock';
+        $stock_class = $product->is_in_stock() ? 'wqpn-in-stock' : 'wqpn-out-stock';
+
+        $subtotal = $product_price * $product_qty;
+
+        $nonce = wp_create_nonce('_wishlist_quote_price_notify');
+        $url = esc_url(admin_url('admin-ajax.php'));
+        $remove_btn = $this->get_remove_button($product_id, $nonce, $url);
+
+        $formatted_subtotal = $this->format_price($subtotal, $currency_symbol, $currency_position);
+
+        echo "<tr id='wqpn-row-{$product_id}'>
+            <td class='wqpn-img'>{$product_image}</td>
+            <td class='wqpn-product-details'>
+                <strong><a target='_blank' href='{$product->get_permalink()}'>{$product_title}</a></strong><br>
+                {$product_price_html}<br>
+                {$added_time_formatted}<br>
+                <span class='wqpn-product-stock {$stock_class}'>{$stock_status}</span>
+            </td>
+            <td class='wqpn-product-qty'>{$product_qty}
+            </td>
+            <td class='wqpn-product-subtotal' id='wqpn-subtotal-{$product_id}' data-product-id='{$product_id}' data-product-price='{$product_price}'>". $formatted_subtotal ."</td>
+        </tr>";
+
 
     }
 
