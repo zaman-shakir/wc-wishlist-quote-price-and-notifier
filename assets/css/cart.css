@@ -126,15 +126,37 @@
 }
 .wqpn-img{
     width: 100px !important;
-    padding-left: 0px !important;
+    padding: 0px !important;
 }
 .wqpn-product-details{
     text-align: left !important;
     vertical-align: baseline;
     width: 320px !important ;
+    padding-left: 10px;
 
 }
 .wqpn-product-remove,
 .wqpn-product-qty{
     width: 120px !important ;
+}
+.wqpn-order-summary{
+    font-weight: 700;
+}
+.wqpn-price-submit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.wqpn-price-submit-title {
+    grid-column: span 2;
+    text-align: center;
+}
+
+.wqpn-price-submit-grid div {
+    padding: 5px;
+}
+
+#wqpn-price-submit {
+    margin-top: 10px;
 }

@@ -2,8 +2,6 @@
     "sshfs.configpaths": [],
     "workbench.editor.showTabs": "multiple",
     "workbench.editor.enablePreview": false,
-    "liveServer.settings.donotShowInfoMsg": true,
-    "liveServer.settings.donotVerifyTags": true,
     "javascript.updateImportsOnFileMove.enabled": "always",
     "explorer.confirmDelete": false,
     "settingsSync.ignoredExtensions": [
