@@ -6,9 +6,30 @@ class WishlistPage
 {
     public function __construct()
     {
-        $this->wqpn_wishlist_page_contents_shortcode();
-    }
+        add_action('woocommerce_cart_calculate_fees', [$this,'apply_offered_price_discount']);
+        // add_action('wp_ajax_accept_offer', [$this, 'accept_offer']);
 
+        $this->wqpn_wishlist_page_contents_shortcode();
+
+    }
+    public function apply_offered_price_discount()
+    {
+        if (is_user_logged_in()) {
+            $user_id = get_current_user_id();
+            $offered_price = get_user_meta($user_id, 'wqpn_offered_price', true);
+
+            if ($offered_price) {
+                // Calculate the discount
+                $cart_total = WC()->cart->cart_contents_total;
+                $discount = $cart_total - $offered_price;
+
+                // Add the discount as a negative fee
+                if ($discount > 0) {
+                    WC()->cart->add_fee(__('Offered Price Discount', 'text-domain'), -$discount);
+                }
+            }
+        }
+    }
     public function wqpn_wishlist_page_contents_shortcode()
     {
         // Register shortcode to display wishlist
@@ -48,6 +69,7 @@ class WishlistPage
     }
     private function display_submitted_wishlist($user_data)
     {
+
         $currency_symbol = get_woocommerce_currency_symbol();
         $currency_position = get_option('woocommerce_currency_pos');
         ob_start();
@@ -95,6 +117,11 @@ class WishlistPage
             <div style="text-align:right"><p><p>Status :</div><div><p>' . esc_html($user_data['status']) . '</p></div>
         </div></div>';
 
+        /// if status is accepted. visible this link
+        if($user_data['status'] == 'accepted') {
+            ?>
+        <a href="<?php echo esc_url(add_query_arg(['action' => 'wqpn_add_wishlist_to_cart', 'unique_id' => $user_data['unique_id'], 'nonce' => wp_create_nonce('wqpn_add_wishlist_to_cart')], home_url('/'))); ?>" class="button">Add Wishlist to Cart</a>
+        <?php }
         return ob_get_clean();
     }
 
@@ -293,8 +320,8 @@ class WishlistPage
                     <div id="wqpn-wishlist-total">' . $this->format_price_for_submit($wishlist_total, $currency_symbol, $currency_position) . '</div>
                     <div>Your Price:</div>
                     <div><input name="quoteprice" type="number" value ="'.$wishlist_total.'" id="wqpn-price-input" step="0.01" /></div>
-                    <div>Email:</div>
-                    <div><input name="email" required type="email" id="wqpn-email-input" /></div>
+                    <div style="display:none">Email:</div>
+                    <div><input name="email" hidden type="email" id="wqpn-email-input" value=" " /></div>
                     <div>WhatsApp:</div>
                     <div><input name="whatsapp" type="tel" id="wqpn-whatsapp-input" /></div>
                     <div>Telegram:</div>
@@ -430,8 +457,10 @@ class WishlistPage
     {
         // Collect POST data
         $user_id = get_current_user_id();
+        $current_user = wp_get_current_user();
+        $user_email = $current_user->user_email;
         $quote_price = $_POST['quoteprice'];
-        $email = $_POST['email'];
+        $email = $user_email;
         $whatsapp = $_POST['whatsapp'];
         $telegram = $_POST['telegram'];
 

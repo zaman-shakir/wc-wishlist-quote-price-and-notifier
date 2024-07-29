@@ -1,6 +1,49 @@
 (function ($) {
     "use strict";
+    $(".wqpn_button_accept_offer").on("click", function (e) {
+        e.preventDefault();
 
+        var button = $(this);
+        var uniqueId = button.data("unique-id");
+        const userId = button.data("user-id");
+        var nonce = button.data("nonce");
+
+        $.ajax({
+            url: ajaxurl, // WordPress AJAX handler URL
+            method: "POST",
+            data: {
+                action: "accept_offer",
+                unique_id: uniqueId,
+                user_id: userId,
+                security: nonce,
+            },
+            success: function (response) {
+                if (response.success) {
+                    button.closest("tr").find(".status").text("accepted");
+                    alert("Offer accepted");
+                    document.getElementById(
+                        "wqpn_button_reject_offer"
+                    ).innerHTML = "";
+                    document.getElementById(
+                        "wqpn_button_reject_offer"
+                    ).style.display = "none";
+                    document.getElementById(
+                        "wqpn_button_accept_offer"
+                    ).style.display = "none";
+                    document.getElementById(
+                        "wqpn_button_accept_offer"
+                    ).innerHTML = "";
+                    document.getElementById(
+                        "wqpn_accepted_offer"
+                    ).style.display = "block";
+                    //wqpn_accepted_offer
+                    //wqpn_button_reject_offer
+                } else {
+                    alert("Error: " + response.data);
+                }
+            },
+        });
+    });
     // Callback function for AJAX response
     function wishlist_callback(responseData) {
         if (responseData.status === 201) {

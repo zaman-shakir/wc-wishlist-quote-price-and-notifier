@@ -190,3 +190,15 @@
 .status-node.active svg {
     fill: #0073aa;
 }
+.wqpn-single-product{
+    display: flex;
+    gap:10px;
+}
+.wqpn-single-product-details{
+    display: flex;
+    gap: 8px;
+    padding: 5px;
+}
+#wqpn_accepted_offer{
+    display: none;
+}

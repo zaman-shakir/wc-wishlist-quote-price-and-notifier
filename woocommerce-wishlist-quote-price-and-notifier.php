@@ -120,7 +120,10 @@ final class WC_Wishlist_Quote_Price_and_Notifier
         //var_dump("plugin loadded");
         new Shakir\WishlistQuotePriceAndNotifier\Assets\Assets();
         Shakir\WishlistQuotePriceAndNotifier\Frontend\Frontend::get_instance();
-
+        if(is_admin()) {
+            // Initialize the Admin class
+            Shakir\WishlistQuotePriceAndNotifier\Admin\Admin::get_instance();
+        }
     }
 
     /**

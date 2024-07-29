@@ -1,6 +1,6 @@
 <?php
 
-namespace Shakir\WishlistQuotePriceAndNotifier\Admin;
+namespace Shakir\WishlistQuotePriceAndNotifier\Admin\Admin_Notice;
 
 /**
  * Class Admin_Notice
