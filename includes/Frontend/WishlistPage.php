@@ -6,11 +6,44 @@ class WishlistPage
 {
     public function __construct()
     {
+        add_action('template_redirect', [$this, 'wqpn_add_wishlist_to_cart']);
         add_action('woocommerce_cart_calculate_fees', [$this,'apply_offered_price_discount']);
         // add_action('wp_ajax_accept_offer', [$this, 'accept_offer']);
 
         $this->wqpn_wishlist_page_contents_shortcode();
 
+    }
+    public function wqpn_add_wishlist_to_cart()
+    {
+        if (isset($_GET['action']) && $_GET['action'] === 'wqpn_add_wishlist_to_cart' && isset($_GET['unique_id']) && isset($_GET['nonce']) && wp_verify_nonce($_GET['nonce'], 'wqpn_add_wishlist_to_cart')) {
+            $unique_id = sanitize_text_field($_GET['unique_id']);
+            $user_id = sanitize_text_field($_GET['user_id']);
+
+            // Fetch wishlist data
+            $all_users_data = get_transient('wqpn_wishlist');
+
+            if ($all_users_data && isset($all_users_data[$user_id])) {
+
+                $data = $all_users_data[$user_id];
+                if ($data['unique_id'] === $unique_id) {
+                    $user_data = $data;
+                    $products = $user_data['products'];
+
+                    // Clear the cart
+                    WC()->cart->empty_cart();
+
+                    // Add products to the cart
+                    foreach ($products as $product_id => $product_data) {
+                        WC()->cart->add_to_cart($product_id, $product_data['qty']);
+                    }
+
+                    // Redirect to the cart page
+                    wp_safe_redirect(wc_get_cart_url());
+                    exit;
+
+                }
+            }
+        }
     }
     public function apply_offered_price_discount()
     {
@@ -45,7 +78,7 @@ class WishlistPage
             $user_data = $all_users_data[$user_id];
             $status = $user_data['status'];
 
-            if ($status === 'submitted') {
+            if ($status === 'submitted' || $status === 'accepted') {
                 return $this->display_submitted_wishlist($user_data);
             }
         }
@@ -114,14 +147,16 @@ class WishlistPage
             row-gap: 0px;">
             <div style="text-align:right"><p>Wishlist Total :</p></div><div><p> ' . $this->format_price($user_data['wishlist_price'], $currency_symbol, $currency_position) . '</p></div>
             <div style="text-align:right"><p>Offered Price :</div><div><p>' . $this->format_price($user_data['quote_price'], $currency_symbol, $currency_position) . '</p></div>
-            <div style="text-align:right"><p><p>Status :</div><div><p>' . esc_html($user_data['status']) . '</p></div>
-        </div></div>';
+            <div style="text-align:right"><p><p>Status :</div><div><p>' . esc_html($user_data['status']) . '</p></div>';
+
+
 
         /// if status is accepted. visible this link
         if($user_data['status'] == 'accepted') {
             ?>
-        <a href="<?php echo esc_url(add_query_arg(['action' => 'wqpn_add_wishlist_to_cart', 'unique_id' => $user_data['unique_id'], 'nonce' => wp_create_nonce('wqpn_add_wishlist_to_cart')], home_url('/'))); ?>" class="button">Add Wishlist to Cart</a>
-        <?php }
+<a href="<?php echo esc_url(add_query_arg(['action' => 'wqpn_add_wishlist_to_cart', 'unique_id' => $user_data['unique_id'], 'user_id' => get_current_user_id(), 'nonce' => wp_create_nonce('wqpn_add_wishlist_to_cart')], home_url('/'))); ?>" class="button">Add Wishlist to Cart</a>        <?php }
+        echo  '</div></div>';
+
         return ob_get_clean();
     }
 
