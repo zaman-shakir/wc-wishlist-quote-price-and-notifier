@@ -251,8 +251,16 @@
                         _wpnonce: nonce,
                         wishlist_action: wishlistAction,
                     };
-                    console.log("Request Data:", data);
+                    // Add loading icon
+                    this.innerHTML =
+                        //'<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>';
+                        '<div class="spinner"><div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div></div>';
 
+                    this.disabled = true;
+
+                    console.log("button clicked Request Data:", data);
+                    console.dir(this);
+                    console.log(this);
                     $.ajax({
                         url: url,
                         method: "POST",
@@ -260,6 +268,11 @@
                         success: function (response) {
                             try {
                                 var responseData = JSON.parse(response);
+                                this.innerHTML =
+                                    wishlistAction === "remove_from_wishlist"
+                                        ? "Remove from Wishlist"
+                                        : "Add to Wishlist";
+                                this.disabled = false;
                                 wishlist_callback(responseData);
                             } catch (err) {
                                 console.warn(
@@ -296,7 +309,9 @@
                     wishlist_action: wishlistAction,
                 };
                 console.log("Request Data:", data);
-
+                // Add loading icon
+                // this.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+                // this.disabled = true;
                 $.ajax({
                     url: url,
                     method: "POST",
@@ -305,6 +320,11 @@
                         try {
                             var responseData = JSON.parse(response);
                             console.log("Response Data:", responseData);
+                            // button.innerHTML =
+                            //     wishlistAction === "remove_from_wishlist"
+                            //         ? "Remove from Wishlist"
+                            //         : "Add to Wishlist";
+                            // button.disabled = false;
                             wishlist_page_callback(responseData);
                         } catch (err) {
                             console.warn("Error parsing JSON response:", err);

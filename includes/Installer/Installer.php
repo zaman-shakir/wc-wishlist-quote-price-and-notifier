@@ -16,6 +16,7 @@ class Installer
      */
     public function run()
     {
+
         $this->add_installed_flag();
         $this->add_version();
         $this->load_plugin_textdomain();
@@ -30,12 +31,13 @@ class Installer
             return; // Page already exists, no need to create it
         }
 
-        // Create the page
+        //todo Page name and slug can be created from admin settings
         $wishlist_page = array(
             'post_title'    => 'My Wishlist',
             'post_content'  => '[wqpn_wishlist]', // Shortcode to display wishlist content
             'post_status'   => 'publish',
             'post_type'     => 'page',
+            'post_name'     => 'wqpn-my-wishlist',
         );
         wp_insert_post($wishlist_page);
     }
