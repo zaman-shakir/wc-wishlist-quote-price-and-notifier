@@ -8,9 +8,6 @@ class WishlistPage
     {
         add_action('template_redirect', [$this, 'wqpn_add_wishlist_to_cart']);
         add_action('woocommerce_cart_calculate_fees', [$this,'apply_offered_price_discount']);
-        // add_action('new_wishlist_from_scratch', [$this,'new_wishlist_from_scratch']);
-        // add_action('new_wishlist_from_scratch', [$this,'new_wishlist_from_scratch']);
-        // add_action('wp_ajax_accept_offer', [$this, 'accept_offer']);
         add_action('wp_ajax_new_wishlist_from_scratch', [$this, 'new_wishlist_from_scratch']);
         add_action('wp_ajax_nopriv_new_wishlist_from_scratch', [$this, 'new_wishlist_from_scratch']);
 
@@ -20,7 +17,7 @@ class WishlistPage
     }
     public static function new_wishlist_from_scratch()
     {
-        //var_dump("req coming here?");
+
         //get wishlost for now logged in user
         if(!is_user_logged_in()) {
             wp_send_json_error('No user found');
@@ -57,7 +54,6 @@ class WishlistPage
             $user_id = sanitize_text_field($_GET['user_id']);
 
             // Fetch wishlist data
-            //$all_users_data = get_transient('wqpn_wishlist');
             $user_data = $this->get_loggedin_user_quote_data();
 
             if (isset($user_data)) {
@@ -88,7 +84,6 @@ class WishlistPage
         if (is_user_logged_in()) {
             $user_id = get_current_user_id();
             $offered_price = get_user_meta($user_id, 'wqpn_offered_price', true);
-            //$has_used_discount = get_user_meta($user_id, 'wqpn_discount_used', true);
 
             global $wpdb;
             $table_name = $wpdb->prefix . 'wqpn_wishlist';
@@ -100,8 +95,6 @@ class WishlistPage
                 ),
                 ARRAY_A
             );
-
-            //var_dump($user_data);
 
             if ($offered_price) {
                 // Calculate the discount
@@ -138,7 +131,6 @@ class WishlistPage
         $table_name = $wpdb->prefix . 'wqpn_wishlist';
         $all_users_data = $wpdb->get_row(
             $wpdb->prepare(
-                // "SELECT * FROM $table_name WHERE archived = 0 AND user_id = %d LIMIT 1",
                 "SELECT * FROM $table_name WHERE archived = 0 AND user_id = %d",
                 $user_id
             ),
@@ -152,7 +144,6 @@ class WishlistPage
         $user_id = get_current_user_id();
 
         $user_data = $this->get_loggedin_user_quote_data();
-        //var_dump($user_data);
         if ($user_id && is_user_logged_in()) {
             //$user_data = $all_users_data[$user_id];
 
@@ -595,7 +586,6 @@ class WishlistPage
 
         // Collect POST data
         $user_id = get_current_user_id();
-        var_dump($user_id);
         $current_user = wp_get_current_user();
         $user_email = $current_user->user_email;
         $quote_price = $_POST['quoteprice'];
@@ -636,25 +626,9 @@ class WishlistPage
            'whatsapp' => $whatsapp,
            'telegram' => $telegram
         ];
-        var_dump($data);
-        //die();
-        // Insert the data into the database
+
         $table_name = $wpdb->prefix . 'wqpn_wishlist';
         $wpdb->insert($table_name, $data);
-        // Retrieve existing transient data or initialize a new array
-
-        // //todo save into DB too
-        // $all_users_data = get_transient('wqpn_wishlist');
-        // if ($all_users_data === false) {
-        //     $all_users_data = [];
-        // }
-        // //todo save into DB too2 22
-
-        // // Update the transient with the current user's data
-        // $all_users_data[$user_id] = $transient_data;
-        //set_transient('wqpn_wishlist', $all_users_data);
-
-        // Set cookies for 30 days
         setcookie('wqpn_user_applied_for_submit_form', '', time() - 3600, '/'); // Expire the old cookie
         setcookie('wqpn_wishlist', '', time() - 3600, '/'); // Expire the old cookie
         setcookie('wqpn_total_price', '', time() - 3600, '/'); // Expire the old cookie

@@ -8,8 +8,7 @@ class WishlistButton
     {
         add_action('woocommerce_after_shop_loop_item', [$this, 'display_wishlist_button'], 20);
         add_action('woocommerce_before_add_to_cart_form', [$this, 'display_wishlist_button'], 35);
-        //add_action('wp_ajax_toggle_wishlist', [$this, 'toggle_wishlist']);
-        //add_action('wp_ajax_nopriv_toggle_wishlist', [$this, 'toggle_wishlist']);
+
     }
 
 

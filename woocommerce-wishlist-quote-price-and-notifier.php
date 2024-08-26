@@ -12,9 +12,9 @@
     * @package Wishlist_Quote_Price_and_Notifier
     *
     * @wordpress-plugin
-    * Plugin Name: Wishlist Quote Price and Notifier for WooCommerce
+    * Plugin Name: Wishlist Quote Price and Notifier
     * Plugin URI: www.google.com
-    * Description: A WooCommerce plugin for wishlist, quote, price, and notifier functionalities.
+    * Description: A plugin for wishlist, quote, price, and notifier functionalities.
     * Version: 1.0.0
     * Author: zamanshakir
     * Author URI: https://www.linkedin.com/in/shakir-uz-zaman/
@@ -144,23 +144,6 @@ final class WC_Wishlist_Quote_Price_and_Notifier
         } else {
             $installer = new Shakir\WishlistQuotePriceAndNotifier\Installer\Installer();
             $installer->run();
-
-            // //Set older plugin options into new one
-            // $plugin_options           = 'woocommerce_' . 'triplea_payment_gateway' . '_settings';
-            // $plugin_settings_defaults = array();
-            // $plugin_settings          = get_option($plugin_options, $plugin_settings_defaults);
-
-            // $new_plugin_settings = [
-            //     'merchant_key'       => (isset($plugin_settings['triplea_btc2fiat_merchant_key']) && !empty($plugin_settings['triplea_btc2fiat_merchant_key'])) ? $plugin_settings['triplea_btc2fiat_merchant_key'] : '',
-            //     'client_id'          => (isset($plugin_settings['triplea_btc2fiat_client_id']) && !empty($plugin_settings['triplea_btc2fiat_client_id'])) ? $plugin_settings['triplea_btc2fiat_client_id'] : '',
-            //     'client_secret'      => (isset($plugin_settings['triplea_btc2fiat_client_secret']) && !empty($plugin_settings['triplea_btc2fiat_client_secret'])) ? $plugin_settings['triplea_btc2fiat_client_secret'] : '',
-            //     'oauth_token'        => (isset($plugin_settings['triplea_btc2fiat_oauth_token']) && !empty($plugin_settings['triplea_btc2fiat_oauth_token'])) ? $plugin_settings['triplea_btc2fiat_oauth_token'] : '',
-            //     'oauth_token_expiry' => (isset($plugin_settings['triplea_btc2fiat_oauth_token_expiry']) && !empty($plugin_settings['triplea_btc2fiat_oauth_token_expiry'])) ? $plugin_settings['triplea_btc2fiat_oauth_token_expiry'] : '',
-            //     'debug_log'          => (isset($plugin_settings['debug_log_enabled']) && !empty($plugin_settings['debug_log_enabled'])) ? $plugin_settings['debug_log_enabled'] : '',
-            //     'crypto_text'        => (isset($plugin_settings['triplea_bitcoin_text_custom_value']) && !empty($plugin_settings['triplea_bitcoin_text_custom_value'])) ? $plugin_settings['triplea_bitcoin_text_custom_value'] : '',
-            //     'crypto_logo'        => 'show-logo',
-            // ];
-            // update_option($plugin_options, $new_plugin_settings);
         }
     }
 

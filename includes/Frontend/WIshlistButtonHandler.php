@@ -19,10 +19,10 @@ class WishlistButtonHandler
 
         // Verify nonce for security
         if (!isset($_REQUEST['_wpnonce']) || !wp_verify_nonce($_REQUEST['_wpnonce'], '_wishlist_quote_price_notify')) {
-            wp_die(__('Bad attempt, invalid nonce for new wishlist request', 'wc-triplea-crypto-payment'));
+            wp_die(__('Bad attempt, invalid nonce for new wishlist request', 'wc-wishlist-quote-and-price-notifier'));
         }
         if(!isset($_REQUEST['product_id'])) {
-            wp_die(__('Bad attempt, Product is not valid', 'wc-triplea-crypto-payment'));
+            wp_die(__('Bad attempt, Product is not valid', 'wc-wishlist-quote-and-price-notifier'));
         }
         $product_id = isset($_REQUEST['product_id']) ? intval($_REQUEST['product_id']) : 0;
         $wishlist_action = isset($_REQUEST['wishlist_action']) ? sanitize_text_field($_REQUEST['wishlist_action']) : '';
@@ -31,7 +31,7 @@ class WishlistButtonHandler
 
         //Ensure product_id and wishlist_action are valid
         if (empty($product_id) || !in_array($wishlist_action, ['add_to_wishlist', 'remove_from_wishlist'])) {
-            wp_die(__('Invalid product ID or wishlist action', 'wc-triplea-crypto-payment'));
+            wp_die(__('Invalid product ID or wishlist action', 'wc-wishlist-quote-and-price-notifier'));
         }
 
         // Handle wishlist action based on wishlist_action value
@@ -44,7 +44,7 @@ class WishlistButtonHandler
                 break;
             default:
                 // Invalid wishlist_action, should not happen with the check above
-                wp_die(__('Invalid wishlist action', 'wc-triplea-crypto-payment'));
+                wp_die(__('Invalid wishlist action', 'wc-wishlist-quote-and-price-notifier'));
         }
 
         $response = [
