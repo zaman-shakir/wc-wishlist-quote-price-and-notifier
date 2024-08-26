@@ -10,6 +10,7 @@ class Admin
     {
         add_action('admin_menu', [$this, 'add_menu_page']);
         add_action('wp_ajax_accept_offer', [$this, 'accept_offer']);
+        add_action('wp_ajax_reject_offer', [$this, 'reject_offer']);
 
     }
 
@@ -20,6 +21,58 @@ class Admin
             self::$instance = new self();
         }
         return self::$instance;
+    }
+    public function reject_offer()
+    {
+        check_ajax_referer('wqpn_reject_offer', 'security');
+        $unique_id = isset($_POST['unique_id']) ? sanitize_text_field($_POST['unique_id']) : '';
+        $user_id = isset($_POST['user_id']) ? sanitize_text_field($_POST['user_id']) : '';
+
+        if (!$user_id) {
+            wp_send_json_error('Invalid request');
+        }
+
+        // $all_users_data = get_transient('wqpn_wishlist');
+
+        //  get user using user id, archived - 0
+        // $all_users_data = get_transient('wqpn_wishlist');
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'wqpn_wishlist';
+        $user_data = $wpdb->get_row(
+            $wpdb->prepare(
+                // "SELECT * FROM $table_name WHERE archived = 0 AND user_id = %d LIMIT 1",
+                "SELECT * FROM $table_name Where archived = 0 AND user_id = %d",
+                $user_id
+            ),
+            ARRAY_A
+        );
+
+        if (isset($user_data)) {
+            //$user_data =user_data;
+            //$user_data['status'] = 'rejected';
+            //$all_users_data[$user_id] = $user_data;
+            //set_transient('wqpn_wishlist', $all_users_data);
+            $wpdb->update(
+                $table_name,
+                [
+                    'status' => 'rejected',
+                    'archived'  => 1
+                ], // Data to update
+                ['id' => $user_data['id']], // Where clause
+                ['%s'], // Data format
+                ['%d']  // Where clause format
+            );
+
+            // Store the offered price in user meta
+            $user_info = get_user_by('email', $user_data['email']);
+            // if ($user_info) {
+            //     update_user_meta($user_info->ID, 'wqpn_offered_price', $user_data['quote_price']);
+            // }
+
+            wp_send_json_success('Offer Rejected');
+        } else {
+            wp_send_json_error('Wishlist not found');
+        }
     }
     public function accept_offer()
     {
@@ -33,11 +86,32 @@ class Admin
 
         $all_users_data = get_transient('wqpn_wishlist');
 
-        if ($all_users_data && isset($all_users_data[$user_id])) {
-            $user_data = $all_users_data[$user_id];
+        //  get user using user id, archived - 0
+        // $all_users_data = get_transient('wqpn_wishlist');
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'wqpn_wishlist';
+        $user_data = $wpdb->get_row(
+            $wpdb->prepare(
+                // "SELECT * FROM $table_name WHERE archived = 0 AND user_id = %d LIMIT 1",
+                "SELECT * FROM $table_name Where archived = 0 AND user_id = %d",
+                $user_id
+            ),
+            ARRAY_A
+        );
+
+        if (isset($user_data)) {
+            //$user_data =user_data;
             $user_data['status'] = 'accepted';
             $all_users_data[$user_id] = $user_data;
             set_transient('wqpn_wishlist', $all_users_data);
+            $wpdb->update(
+                $table_name,
+                ['status' => 'accepted'], // Data to update
+                ['id' => $user_data['id']], // Where clause
+                ['%s'], // Data format
+                ['%d']  // Where clause format
+            );
+
             // Store the offered price in user meta
             $user_info = get_user_by('email', $user_data['email']);
             if ($user_info) {
@@ -91,13 +165,23 @@ class Admin
 
     private function display_user_wishlists()
     {
-        $all_users_data = get_transient('wqpn_wishlist');
+        // $all_users_data = get_transient('wqpn_wishlist');
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'wqpn_wishlist';
+        $all_users_data = $wpdb->get_results(
+            $wpdb->prepare(
+                // "SELECT * FROM $table_name WHERE archived = 0 AND user_id = %d LIMIT 1",
+                "SELECT * FROM $table_name Order by archived",
+            ),
+            ARRAY_A
+        );
+
         $row_number = 1;
 
-        if ($all_users_data) {
+        if (isset($all_users_data)) {
             foreach ($all_users_data as $user_data) {
 
-                //var_dump($user_data);
+
                 $user_info = get_user_by('email', $user_data['email']);
                 $user_email = $user_info ? $user_info->user_email : 'Unknown';
                 $user_name = $user_info ? $user_info->display_name : 'Unknown';
@@ -116,7 +200,8 @@ class Admin
 
                 echo '<td>';
                 $product_count = 1;
-                foreach ($user_data['products'] as $product_id => $product_data) {
+                $products = json_decode($user_data['products'], true);
+                foreach ($products as $product_id => $product_data) {
                     //var_dump($product_data);
 
 
@@ -145,9 +230,16 @@ class Admin
                 echo '<td> Wishlist Total:  ' . wp_kses_post($this->format_price($user_data['wishlist_price'])) . '<br>Offered Price: ' . wp_kses_post($this->format_price($user_data['quote_price'])) . '</td>';
                 echo '<td>' . esc_html($user_data['status']) . '</td>';
                 if($user_data['status'] == 'submitted') {
-                    echo '<td><a href="#" id="wqpn_button_accept_offer" class="button accept-offer wqpn_button_accept_offer" data-user-id="'.esc_attr($user_info->ID).'" data-unique-id="' . esc_attr($unique_num) . '" data-nonce="' . wp_create_nonce('wqpn_accept_offer') . '">Accept</a> <a href="#" id="wqpn_button_reject_offer"  class="button">Reject</a><span id="wqpn_accepted_offer" ">Accepted</span></td>';
+                    echo '<td>
+                    <a href="#" id="wqpn_button_accept_offer" class="button accept-offer wqpn_button_accept_offer" data-user-id="'.esc_attr($user_info->ID).'" data-unique-id="' . esc_attr($unique_num) . '" data-nonce="' . wp_create_nonce('wqpn_accept_offer') . '">Accept</a>
+                    <a href="#" id="wqpn_button_reject_offer"  class="button reject-offer wqpn_button_reject_offer"  data-user-id="'.esc_attr($user_info->ID).'" data-unique-id="' . esc_attr($unique_num) . '" data-nonce="' . wp_create_nonce('wqpn_reject_offer') . '">Reject</a><span id="wqpn_accepted_offer" ">Accepted</span><span id="wqpn_rejected_offer" ">Rejected</span>
+                    </td>';
                 } elseif($user_data['status'] == 'accepted') {
-                    echo '<td><h5>Accepted</h5></td>';
+                    echo '<td><h5>Accepted</h5>';
+                    if($user_data['used']) {
+                        echo '<br> Offered used already';
+                    }
+                    echo '</td>';
                 } else {
                     echo '<td><h5>Declined</h5></td>';
 

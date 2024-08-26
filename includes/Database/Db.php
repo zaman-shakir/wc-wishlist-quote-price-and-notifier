@@ -1,5 +1,139 @@
 <?php
 
+namespace Shakir\WishlistQuotePriceAndNotifier\Database;
+
+/**
+ * methods in this class
+ * add to wishlist
+ * remove from wishlist
+ * wishlist status?
+ * apply for quotation
+ * already applied for quotation
+ *
+ *  * is wishlisted?
+
+     private function is_wishlisted($product_id)
+    {
+        $user_id = get_current_user_id();
+
+        // Retrieve wishlist from cookies
+        $wishlist = isset($_COOKIE['wqpn_wishlist']) ? json_decode(stripslashes($_COOKIE['wqpn_wishlist']), true) : [];
+
+        // Check if the product_id is in the wishlist array
+        return is_array($wishlist) && array_key_exists($product_id, $wishlist);
+    }
+        <?php
+
+namespace Shakir\WishlistQuotePriceAndNotifier\Frontend;
+
+use Shakir\WishlistQuotePriceAndNotifier\Logger;
+
+class WishlistButtonHandler
+{
+    //protected $logger;
+
+    public function __construct()
+    {
+
+        //$this->logger = Logger::get_instance();
+    }
+
+    public static function wc_ajax_click_wishlist_button()
+    {
+
+        // Verify nonce for security
+        if (!isset($_REQUEST['_wpnonce']) || !wp_verify_nonce($_REQUEST['_wpnonce'], '_wishlist_quote_price_notify')) {
+            wp_die(__('Bad attempt, invalid nonce for new wishlist request', 'wc-triplea-crypto-payment'));
+        }
+        // Retrieve product_id and wishlist_action from $_REQUEST
+        $product_id = isset($_REQUEST['product_id']) ? intval($_REQUEST['product_id']) : 0;
+        $wishlist_action = isset($_REQUEST['wishlist_action']) ? sanitize_text_field($_REQUEST['wishlist_action']) : '';
+        $remove_class = $wishlist_action == "add_to_wishlist" ? "wqpn-wishlist-empty" : "wqpn-wishlist-full";
+        $add_class = $wishlist_action != "remove_from_wishlist" ? "wqpn-wishlist-full" : "wqpn-wishlist-empty";
+
+        //Ensure product_id and wishlist_action are valid
+        if (empty($product_id) || !in_array($wishlist_action, ['add_to_wishlist', 'remove_from_wishlist'])) {
+            wp_die(__('Invalid product ID or wishlist action', 'wc-triplea-crypto-payment'));
+        }
+
+        // Handle wishlist action based on wishlist_action value
+        switch ($wishlist_action) {
+            case 'add_to_wishlist':
+                self::add_to_wishlist($product_id);
+                break;
+            case 'remove_from_wishlist':
+                self::remove_from_wishlist($product_id);
+                break;
+            default:
+                // Invalid wishlist_action, should not happen with the check above
+                wp_die(__('Invalid wishlist action', 'wc-triplea-crypto-payment'));
+        }
+
+        $response = [
+            'status' => 201,
+            'message' => 'Wishlist action processed successfully',
+            'product_id' => $product_id,
+            'wishlist_action' => $wishlist_action,
+            'remove_class' => $remove_class,
+            'add_class' => $add_class,
+        ];
+
+        Logger::get_instance()->write_log(wc_print_r($response, true), true);
+        // Example response
+        echo json_encode($response);
+        wp_die();
+    }
+
+    private static function add_to_wishlist($product_id)
+    {
+        // Retrieve existing wishlist data from cookie or initialize an empty array
+        $wishlist = isset($_COOKIE['wqpn_wishlist']) ? json_decode(stripslashes($_COOKIE['wqpn_wishlist']), true) : [];
+        Logger::get_instance()->write_log("before adding item to wishlist in handler", true);
+        Logger::get_instance()->write_log(wc_print_r($wishlist, $product_id, true), true);
+
+        // Add product_id to the wishlist array if not already present
+        // if (!in_array($product_id, $wishlist)) {
+        //     $wishlist[] = $product_id;
+        // }
+        // Check if the product is already in the wishlist
+        if (!array_key_exists($product_id, $wishlist)) {
+            // Add the product with the current time
+            $wishlist[$product_id] = [
+                'product_id' => $product_id,
+                'added_time' => time()
+            ];
+
+            // Set the updated wishlist cookie
+            setcookie('wqpn_wishlist', json_encode($wishlist), time() + 3600 * 24 * 30, '/'); // 30 days expiration
+        }
+        Logger::get_instance()->write_log("after adding item to wishlist in handler", true);
+        Logger::get_instance()->write_log(wc_print_r($wishlist, $product_id, true), true);
+        // Save updated wishlist array to cookie
+        setcookie('wqpn_wishlist', json_encode($wishlist), time() + 3600 * 24 * 30, '/'); // 30 days expiration
+    }
+
+    private static function remove_from_wishlist($product_id)
+    {
+        // Retrieve existing wishlist data from cookie or initialize an empty array
+        $wishlist = isset($_COOKIE['wqpn_wishlist']) ? json_decode(stripslashes($_COOKIE['wqpn_wishlist']), true) : [];
+
+        // Check if the product is in the wishlist and remove it
+        if (isset($wishlist[$product_id])) {
+            unset($wishlist[$product_id]);
+
+            // Update the wishlist cookie
+            setcookie('wqpn_wishlist', json_encode($wishlist), time() + 3600 * 24 * 30, '/'); // 30 days expiration
+        }
+
+        // Save updated wishlist array to cookie
+        setcookie('wqpn_wishlist', json_encode($wishlist), time() + 3600 * 24 * 30, '/'); // 30 days expiration
+    }
+
+
+
+}
+<?php
+
 namespace Shakir\WishlistQuotePriceAndNotifier\Frontend;
 
 class WishlistPage
@@ -8,46 +142,9 @@ class WishlistPage
     {
         add_action('template_redirect', [$this, 'wqpn_add_wishlist_to_cart']);
         add_action('woocommerce_cart_calculate_fees', [$this,'apply_offered_price_discount']);
-        // add_action('new_wishlist_from_scratch', [$this,'new_wishlist_from_scratch']);
-        // add_action('new_wishlist_from_scratch', [$this,'new_wishlist_from_scratch']);
         // add_action('wp_ajax_accept_offer', [$this, 'accept_offer']);
-        add_action('wp_ajax_new_wishlist_from_scratch', [$this, 'new_wishlist_from_scratch']);
-        add_action('wp_ajax_nopriv_new_wishlist_from_scratch', [$this, 'new_wishlist_from_scratch']);
-
 
         $this->wqpn_wishlist_page_contents_shortcode();
-
-    }
-    public static function new_wishlist_from_scratch()
-    {
-        //var_dump("req coming here?");
-        //get wishlost for now logged in user
-        if(!is_user_logged_in()) {
-            wp_send_json_error('No user found');
-
-        }
-
-        global $wpdb;
-        $user_id = get_current_user_id();
-        $table_name = $wpdb->prefix . 'wqpn_wishlist';
-
-        $count = $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT COUNT(*) FROM $table_name WHERE archived = 0 AND user_id = %d",
-                $user_id
-            )
-        );
-
-        if ($count > 0) {
-            $wpdb->query(
-                $wpdb->prepare(
-                    "UPDATE $table_name SET archived = 1 WHERE archived = 0 AND user_id = %d",
-                    $user_id
-                )
-            );
-        }
-
-        wp_send_json_success('Wishlist updated');
 
     }
     public function wqpn_add_wishlist_to_cart()
@@ -57,15 +154,14 @@ class WishlistPage
             $user_id = sanitize_text_field($_GET['user_id']);
 
             // Fetch wishlist data
-            //$all_users_data = get_transient('wqpn_wishlist');
-            $user_data = $this->get_loggedin_user_quote_data();
+            $all_users_data = get_transient('wqpn_wishlist');
 
-            if (isset($user_data)) {
+            if ($all_users_data && isset($all_users_data[$user_id])) {
 
-                $data = $user_data;
+                $data = $all_users_data[$user_id];
                 if ($data['unique_id'] === $unique_id) {
                     $user_data = $data;
-                    $products = json_decode($user_data['products'], true);
+                    $products = $user_data['products'];
 
                     // Clear the cart
                     WC()->cart->empty_cart();
@@ -88,20 +184,6 @@ class WishlistPage
         if (is_user_logged_in()) {
             $user_id = get_current_user_id();
             $offered_price = get_user_meta($user_id, 'wqpn_offered_price', true);
-            //$has_used_discount = get_user_meta($user_id, 'wqpn_discount_used', true);
-
-            global $wpdb;
-            $table_name = $wpdb->prefix . 'wqpn_wishlist';
-            $user_data = $wpdb->get_row(
-                $wpdb->prepare(
-                    // "SELECT * FROM $table_name WHERE archived = 0 AND user_id = %d LIMIT 1",
-                    "SELECT * FROM $table_name Where archived = 0 AND used = 0 AND user_id = %d",
-                    $user_id
-                ),
-                ARRAY_A
-            );
-
-            //var_dump($user_data);
 
             if ($offered_price) {
                 // Calculate the discount
@@ -111,17 +193,6 @@ class WishlistPage
                 // Add the discount as a negative fee
                 if ($discount > 0) {
                     WC()->cart->add_fee(__('Offered Price Discount', 'text-domain'), -$discount);
-                    update_user_meta($user_id, 'wqpn_discount_used', true);
-                    $wpdb->update(
-                        $table_name,
-                        [
-                            'archived' => 1,
-                            'used' => 1
-                        ], // Data to update
-                        ['id' => $user_id], // Where clause
-                        ['%s'], // Data format
-                        ['%d']  // Where clause format
-                    );
                 }
             }
         }
@@ -131,37 +202,17 @@ class WishlistPage
         // Register shortcode to display wishlist
         add_shortcode('wqpn_wishlist', [$this, 'wqpn_display_wishlist']);
     }
-    public function get_loggedin_user_quote_data()
-    {
-        global $wpdb;
-        $user_id = get_current_user_id();
-        $table_name = $wpdb->prefix . 'wqpn_wishlist';
-        $all_users_data = $wpdb->get_row(
-            $wpdb->prepare(
-                // "SELECT * FROM $table_name WHERE archived = 0 AND user_id = %d LIMIT 1",
-                "SELECT * FROM $table_name WHERE archived = 0 AND user_id = %d",
-                $user_id
-            ),
-            ARRAY_A
-        );
-        return $all_users_data;
-    }
     public function wqpn_display_wishlist()
     {
 
         $user_id = get_current_user_id();
+        $all_users_data = get_transient('wqpn_wishlist');
 
-        $user_data = $this->get_loggedin_user_quote_data();
-        //var_dump($user_data);
-        if ($user_id && is_user_logged_in()) {
-            //$user_data = $all_users_data[$user_id];
+        if (isset($all_users_data[$user_id])) {
+            $user_data = $all_users_data[$user_id];
+            $status = $user_data['status'];
 
-            $status = $user_data['status'] ?? null;
-
-            /**
-             * status : submitted, accepted, declined, archived
-            */
-            if ($status === 'submitted' || $status === 'accepted' || $status === "rejected") {
+            if ($status === 'submitted' || $status === 'accepted') {
                 return $this->display_submitted_wishlist($user_data);
             }
         }
@@ -190,22 +241,11 @@ class WishlistPage
         $currency_position = get_option('woocommerce_currency_pos');
         ob_start();
         // echo $this->format_status_tree($user_data['status']);
-        if($user_data['status'] == 'rejected') {
-            echo "<div style='display: flex; flex-direction:column;align-items:center; justify-content: center; margin-top: 20px;'>
-                <h5 style='max-width: 62%; text-align: center; line-height: 1.5;'>
-                    Your offer has been reviewed, and we regret to inform you that it has been declined. We appreciate your interest and encourage you to explore other opportunities with us. Thank you for your understanding.
-
-                    </h5>
-                    <span class='new-wishlist-from-scratch' id='new-wishlist-from-scratch' style='color:blue;cursor:pointer; margin-bottom:50px'>Please click here to continue a new wishlist.</span>
-            </div>";
-        } else {
-            echo "<div style='display: flex; justify-content: center; margin-top: 20px;'>
-            <h5 style='max-width: 60%; text-align: center; line-height: 1.5;'>
-                Your offered price has been submitted successfully. Please wait while we review your offer. We will contact you shortly with our decision.
-            </h5>
-          </div>";
-        }
-
+        echo "<div style='display: flex; justify-content: center; margin-top: 20px;'>
+        <h5 style='max-width: 60%; text-align: center; line-height: 1.5;'>
+            Your offered price has been submitted successfully. Please wait while we review your offer. We will contact you shortly with our decision.
+        </h5>
+      </div>";
         echo '<div class="wqpn-wishlist-container">';
 
         echo '<div class="wqpn-products"  style="width:58%"><table class="wqpn-wishlist-table"><tbody>';
@@ -219,14 +259,20 @@ class WishlistPage
         </td>
         <td class='wqpn-product-subtotal' id='wqpn-subtotal'><strong>Subtotal</strong></td>
     </tr>";
-        $products = json_decode($user_data['products'], true);
-
-        foreach ($products as $product_id => $item) {
+        foreach ($user_data['products'] as $product_id => $item) {
             $this->display_submitted_wishlist_item($item, $currency_symbol, $currency_position);
         }
         echo '</tbody></table></div>';
 
-
+        // echo '<div class="wqpn-order-summary" style="width:40%">            <h4 style="text-align:center">Your Offered Price Summary</h4>
+        // <div class="wqpn-price-submit-grid" style="display: grid;
+        //     grid-template-columns: 1fr 1fr;
+        //     gap: 10px;
+        //     row-gap: 0px;">
+        //     <div style="text-align:right"><p>Wishlist Total :</p></div><div><p> ' . $this->format_price($user_data['wishlist_price'], $currency_symbol, $currency_position) . '</p></div>
+        //     <div style="text-align:right"><p>Offered Price :</div><div><p>' . $this->format_price($user_data['quote_price'], $currency_symbol, $currency_position) . '</p></div>
+        //     <div style="text-align:right"><p><p>Status :</div><div><p>' .$this->format_status_tree($user_data['status']) . '</p></div>
+        // </div></div>';
         echo '<div class="wqpn-order-summary" style="width:40%;height:fit-content">
                     <h4 style="text-align:center">Your Offered Price Summary</h4>
         <div class="wqpn-price-submit-grid" style="display: grid;
@@ -242,9 +288,7 @@ class WishlistPage
         /// if status is accepted. visible this link
         if($user_data['status'] == 'accepted') {
             ?>
-             <a href="<?php echo esc_url(add_query_arg(['action' => 'wqpn_add_wishlist_to_cart', 'unique_id' => $user_data['unique_id'], 'user_id' => get_current_user_id(), 'nonce' => wp_create_nonce('wqpn_add_wishlist_to_cart')], home_url('/'))); ?>" class="button">Add Wishlist to Cart</a>
-            <?php
-        }
+<a href="<?php echo esc_url(add_query_arg(['action' => 'wqpn_add_wishlist_to_cart', 'unique_id' => $user_data['unique_id'], 'user_id' => get_current_user_id(), 'nonce' => wp_create_nonce('wqpn_add_wishlist_to_cart')], home_url('/'))); ?>" class="button">Add Wishlist to Cart</a>        <?php }
         echo  '</div></div>';
 
         return ob_get_clean();
@@ -336,7 +380,7 @@ class WishlistPage
         $product_price = $product->get_price();
         $product_image = $product->get_image();
         $product_qty = 1; // Default quantity for wishlist, adjust as needed
-        $added_time_formatted = date('F j, Y', $added_time);
+        $added_time_formatted = date('F j, Y', strtotime($added_time));
 
         $stock_status = $product->is_in_stock() ? 'In stock' : 'Out of stock';
         $stock_class = $product->is_in_stock() ? 'wqpn-in-stock' : 'wqpn-out-stock';
@@ -357,7 +401,7 @@ class WishlistPage
                 {$added_time_formatted}<br>
                 <span class='wqpn-product-stock {$stock_class}'>{$stock_status}</span>
             </td>
-            <td class='wqpn-product-qty'>{$item['qty']}
+            <td class='wqpn-product-qty'>{$product_qty}
             </td>
             <td class='wqpn-product-subtotal' id='wqpn-subtotal-{$product_id}' data-product-id='{$product_id}' data-product-price='{$product_price}'>". $formatted_subtotal ."</td>
         </tr>";
@@ -446,7 +490,7 @@ class WishlistPage
                     <div>Your Price:</div>
                     <div><input name="quoteprice" type="number" value ="'.$wishlist_total.'" id="wqpn-price-input" step="0.01" /></div>
                     <div style="display:none">Email:</div>
-                    <input name="email" hidden type="email" id="wqpn-email-input" value=" " />
+                    <div><input name="email" hidden type="email" id="wqpn-email-input" value=" " /></div>
                     <div>WhatsApp:</div>
                     <div><input name="whatsapp" type="tel" id="wqpn-whatsapp-input" /></div>
                     <div>Telegram:</div>
@@ -457,22 +501,11 @@ class WishlistPage
                 </div>
               </div>';
         } else {
-
-            if (is_user_logged_in()) {
-                echo '<div class="wqpn-order-summary">
-                <h3>Wishlist Summary</h3>
-                <p>Wishlist Total: <span id="wqpn-total" data-currency-position="' . esc_attr($currency_position) . '" data-currency-symbol="' . esc_attr($currency_symbol) . '"></span></p>
-                <button id="wqpn-submit-price" class="wqpn-submit-price">Submit a Price for these wishlist products?</button>
-            </div>';
-            } else {
-                echo '<div class="wqpn-order-summary">
-                <h3>Wishlist Summary</h3>
-                <p>Wishlist Total: <span id="wqpn-total" data-currency-position="' . esc_attr($currency_position) . '" data-currency-symbol="' . esc_attr($currency_symbol) . '"></span></p>
-
-                <a href="/login" id="" >Please login first to offer a custom price</p>
-            </div>';
-            }
-
+            echo '<div class="wqpn-order-summary">
+            <h3>Wishlist Summary</h3>
+            <p>Wishlist Total: <span id="wqpn-total" data-currency-position="' . esc_attr($currency_position) . '" data-currency-symbol="' . esc_attr($currency_symbol) . '"></span></p>
+            <button id="wqpn-submit-price" class="wqpn-submit-price">Submit a Price for these wishlist products?</button>
+        </div>';
         }
 
     }
@@ -591,11 +624,8 @@ class WishlistPage
     }
     public static function handle_wqpn_submit_quote_price()
     {
-        global $wpdb;
-
         // Collect POST data
         $user_id = get_current_user_id();
-        var_dump($user_id);
         $current_user = wp_get_current_user();
         $user_email = $current_user->user_email;
         $quote_price = $_POST['quoteprice'];
@@ -607,8 +637,6 @@ class WishlistPage
         $wishlist = isset($_COOKIE['wqpn_wishlist']) ? json_decode(stripslashes($_COOKIE['wqpn_wishlist']), true) : [];
         $wishlist_total = isset($_COOKIE['wqpn_total_price']) ? $_COOKIE['wqpn_total_price'] : 0;
 
-        //db col id, user_id , status , wishlist price , quote price , products (all products will be here, can we use serialize or json to store data for this col? I am not sure what to use)
-        //submitted_time, status , ip_address , unique_id, email, whatsapp, telegram,
         // Prepare the data to be saved in the transient
         $transient_data = [
             'wishlist_price' => $wishlist_total,
@@ -622,37 +650,16 @@ class WishlistPage
             'whatsapp' => $whatsapp,
             'telegram' => $telegram
         ];
-        // Prepare the data to be saved in the database
-        $data = [
-           'user_id' => $user_id,
-           'wishlist_price' => $wishlist_total,
-           'quote_price' => $quote_price,
-           'products' => json_encode($wishlist), // Save the products array as JSON
-           'submitted_time' => current_time('mysql'),
-           'status' => 'submitted',
-           'ip_address' => $_SERVER['REMOTE_ADDR'],
-           'unique_id' => wp_generate_uuid4(),
-           'email' => $email,
-           'whatsapp' => $whatsapp,
-           'telegram' => $telegram
-        ];
-        var_dump($data);
-        //die();
-        // Insert the data into the database
-        $table_name = $wpdb->prefix . 'wqpn_wishlist';
-        $wpdb->insert($table_name, $data);
+
         // Retrieve existing transient data or initialize a new array
+        $all_users_data = get_transient('wqpn_wishlist');
+        if ($all_users_data === false) {
+            $all_users_data = [];
+        }
 
-        // //todo save into DB too
-        // $all_users_data = get_transient('wqpn_wishlist');
-        // if ($all_users_data === false) {
-        //     $all_users_data = [];
-        // }
-        // //todo save into DB too2 22
-
-        // // Update the transient with the current user's data
-        // $all_users_data[$user_id] = $transient_data;
-        //set_transient('wqpn_wishlist', $all_users_data);
+        // Update the transient with the current user's data
+        $all_users_data[$user_id] = $transient_data;
+        set_transient('wqpn_wishlist', $all_users_data);
 
         // Set cookies for 30 days
         setcookie('wqpn_user_applied_for_submit_form', '', time() - 3600, '/'); // Expire the old cookie
@@ -664,4 +671,11 @@ class WishlistPage
         wp_redirect(home_url('/my-wishlist')); // Replace '/wishlist-page-url' with the actual URL
         exit;
     }
+}
+
+ */
+
+
+class Db
+{
 }

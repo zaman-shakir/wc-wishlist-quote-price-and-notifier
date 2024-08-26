@@ -17,28 +17,13 @@ class WishlistButtonHandler
     public static function wc_ajax_click_wishlist_button()
     {
 
-        /*
-            received data format array(6) {
-            ["action"]=> string(21) "click_wishlist_button"
-            ["product_id"]=> string(2) "78"
-            ["_wpnonce"]=> string(10) "1093474ccf"
-            ["wishlist_action"]=> string(15) "add_to_wishlist"
-            ["woocommerce-login-nonce"]=> NULL
-            ["woocommerce-reset-password-nonce"]=> NULL
-        }
-
-        If wishlist_action = "add_to_wishlist", then save this data.
-        If wishlist_action = "remove_from_wishlist", then remove from wishlist.
-
-        While saving to cookie, save all wishlisted products inside an array; that will be better, I guess.
-        */
-
         // Verify nonce for security
         if (!isset($_REQUEST['_wpnonce']) || !wp_verify_nonce($_REQUEST['_wpnonce'], '_wishlist_quote_price_notify')) {
             wp_die(__('Bad attempt, invalid nonce for new wishlist request', 'wc-triplea-crypto-payment'));
         }
-
-        // Retrieve product_id and wishlist_action from $_REQUEST
+        if(!isset($_REQUEST['product_id'])) {
+            wp_die(__('Bad attempt, Product is not valid', 'wc-triplea-crypto-payment'));
+        }
         $product_id = isset($_REQUEST['product_id']) ? intval($_REQUEST['product_id']) : 0;
         $wishlist_action = isset($_REQUEST['wishlist_action']) ? sanitize_text_field($_REQUEST['wishlist_action']) : '';
         $remove_class = $wishlist_action == "add_to_wishlist" ? "wqpn-wishlist-empty" : "wqpn-wishlist-full";
@@ -61,12 +46,6 @@ class WishlistButtonHandler
                 // Invalid wishlist_action, should not happen with the check above
                 wp_die(__('Invalid wishlist action', 'wc-triplea-crypto-payment'));
         }
-        // Handle wishlist action based on wishlist_action value using match
-        // $response = match ($wishlist_action) {
-        //     'add_to_wishlist' => self::add_to_wishlist($product_id),
-        //     'remove_from_wishlist' => self::remove_from_wishlist($product_id),
-        //     default => wp_die(__('Invalid wishlist action', 'wc-triplea-crypto-payment')),
-        // };
 
         $response = [
             'status' => 201,
@@ -76,18 +55,10 @@ class WishlistButtonHandler
             'remove_class' => $remove_class,
             'add_class' => $add_class,
         ];
-        //$this->logger->write_log("wishlist click button response", true);
-        //self::logger->write_log($response, true);
-        //$this->logger->write_log('webhook_update : - Body = ' . wc_print_r($request->get_body(), true), $debugLoged);
 
         Logger::get_instance()->write_log(wc_print_r($response, true), true);
         // Example response
         echo json_encode($response);
-
-        // For demonstration purposes, you might want to log actions
-
-
-        // Always exit after processing AJAX requests in WordPress
         wp_die();
     }
 

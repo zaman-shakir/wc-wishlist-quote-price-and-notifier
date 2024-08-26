@@ -202,6 +202,9 @@
 #wqpn_accepted_offer{
     display: none;
 }
+#wqpn_rejected_offer{
+    display: none;
+}
 /*
 .lds-ellipsis,
 .lds-ellipsis div {

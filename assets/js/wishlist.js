@@ -1,5 +1,73 @@
 (function ($) {
     "use strict";
+    if (document.getElementById("new-wishlist-from-scratch")) {
+        console.log("element exists?");
+        document
+            .getElementById("new-wishlist-from-scratch")
+            .addEventListener("click", () => {
+                // start making an ajax req.
+                // inside ajax make every wishlist as archived for this current user
+                // so that the user can add a new wishlist from scratch
+                //alert("click working?");
+
+                $.ajax({
+                    url: "/wp-admin/admin-ajax.php",
+                    method: "POST",
+                    data: {
+                        action: "new_wishlist_from_scratch",
+                    },
+                    success: function (response) {
+                        alert("wishlist enabled");
+                        location.reload();
+                    },
+                });
+            });
+    }
+
+    $(".wqpn_button_reject_offer").on("click", function (e) {
+        e.preventDefault();
+
+        var button = $(this);
+        var uniqueId = button.data("unique-id");
+        const userId = button.data("user-id");
+        var nonce = button.data("nonce");
+
+        $.ajax({
+            url: ajaxurl, // WordPress AJAX handler URL
+            method: "POST",
+            data: {
+                action: "reject_offer",
+                unique_id: uniqueId,
+                user_id: userId,
+                security: nonce,
+            },
+            success: function (response) {
+                if (response.success) {
+                    button.closest("tr").find(".status").text("accepted");
+                    alert("Offer Rejected");
+                    document.getElementById(
+                        "wqpn_button_reject_offer"
+                    ).innerHTML = "";
+                    document.getElementById(
+                        "wqpn_button_reject_offer"
+                    ).style.display = "none";
+                    document.getElementById(
+                        "wqpn_button_accept_offer"
+                    ).style.display = "none";
+                    document.getElementById(
+                        "wqpn_button_accept_offer"
+                    ).innerHTML = "";
+                    document.getElementById(
+                        "wqpn_rejected_offer"
+                    ).style.display = "block";
+                    //wqpn_accepted_offer
+                    //wqpn_button_reject_offer
+                } else {
+                    alert("Error: " + response.data);
+                }
+            },
+        });
+    });
     $(".wqpn_button_accept_offer").on("click", function (e) {
         e.preventDefault();
 
