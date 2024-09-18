@@ -79,41 +79,45 @@ class WishlistPage
             }
         }
     }
-    public function apply_offered_price_discount()
-    {
+    public function apply_offered_price_discount() {
         if (is_user_logged_in()) {
             $user_id = get_current_user_id();
             $offered_price = get_user_meta($user_id, 'wqpn_offered_price', true);
 
             global $wpdb;
             $table_name = $wpdb->prefix . 'wqpn_wishlist';
+
+            // Fetch user data where archived = 0 and used = 0
             $user_data = $wpdb->get_row(
                 $wpdb->prepare(
-                    // "SELECT * FROM $table_name WHERE archived = 0 AND user_id = %d LIMIT 1",
-                    "SELECT * FROM $table_name Where archived = 0 AND used = 0 AND user_id = %d",
+                    "SELECT * FROM $table_name WHERE archived = 0 AND used = 0 AND user_id = %d",
                     $user_id
                 ),
                 ARRAY_A
             );
 
             if ($offered_price) {
-                // Calculate the discount
+                // Calculate the discount based on the offered price
                 $cart_total = WC()->cart->cart_contents_total;
                 $discount = $cart_total - $offered_price;
 
-                // Add the discount as a negative fee
+                // Add the discount as a negative fee if the discount is valid
                 if ($discount > 0) {
                     WC()->cart->add_fee(__('Offered Price Discount', 'text-domain'), -$discount);
+
+                    // Mark the offer as used in user meta
                     update_user_meta($user_id, 'wqpn_discount_used', true);
+
+                    // Update the wishlist table, marking the entry as archived and used
                     $wpdb->update(
                         $table_name,
                         [
                             'archived' => 1,
                             'used' => 1
                         ], // Data to update
-                        ['id' => $user_id], // Where clause
-                        ['%s'], // Data format
-                        ['%d']  // Where clause format
+                        ['user_id' => $user_id], // Where clause to match the user
+                        ['%d', '%d'], // Data format for the values being updated (integers)
+                        ['%d'] // Format for the where clause (user_id is an integer)
                     );
                 }
             }
