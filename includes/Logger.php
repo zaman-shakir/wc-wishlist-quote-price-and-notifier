@@ -42,20 +42,24 @@ class Logger
     public function write_log($log, $log_enabled = false, $level = 'info')
     {
         if ($log_enabled) {
-            $logger = wc_get_logger();
-            $context = [ 'source' => 'wc-wishlist-quote-and-price-notifier' ];
+            if (class_exists('WooCommerce')) {
+                $logger = wc_get_logger();
+                $context = [ 'source' => 'wc-wishlist-quote-and-price-notifier' ];
 
-            switch ($level) {
-                case 'warning':
-                    $logger->warning($log, $context);
-                    break;
-                case 'error':
-                    $logger->error($log, $context);
-                    break;
-                case 'info':
-                default:
-                    $logger->info($log, $context);
-                    break;
+                switch ($level) {
+                    case 'warning':
+                        $logger->warning($log, $context);
+                        break;
+                    case 'error':
+                        $logger->error($log, $context);
+                        break;
+                    case 'info':
+                    default:
+                        $logger->info($log, $context);
+                        break;
+                }
+            } else {
+                error_log('WooCommerce is not installed. Could not log: ' . $log);
             }
         }
     }
