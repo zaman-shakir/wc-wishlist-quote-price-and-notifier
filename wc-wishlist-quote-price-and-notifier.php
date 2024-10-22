@@ -62,6 +62,9 @@ final class WC_Wishlist_Quote_Price_and_Notifier
         $this->define_constants();
         $this->check_older_version();
 
+        // Hook to show WooCommerce notice on admin pages
+        add_action('admin_notices', [$this, 'check_woocommerce_status']);
+
         register_activation_hook(__FILE__, [$this, 'activate']);
 
         add_action('plugins_loaded', [$this, 'init_plugin']);
@@ -133,17 +136,22 @@ final class WC_Wishlist_Quote_Price_and_Notifier
     */
     public function activate()
     {
-        // check if woocommerce is already activated or not
-        $checkWC   = in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')));
+        $installer = new Shakir\WishlistQuotePriceAndNotifier\Installer\Installer();
+        $installer->run();
+    }
+
+     /**
+     * Check if WooCommerce is active on every admin page load
+     *
+     * @return void
+    */
+    public function check_woocommerce_status() {
+        $checkWC = in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')));
 
         if (!$checkWC) {
-            // if woocommerce is not installed, display an admin notice
+            // If WooCommerce is not installed, display an admin notice
             $admin_notice = new Shakir\WishlistQuotePriceAndNotifier\Admin\Admin_Notice();
-            add_action('admin_notices', [$admin_notice, 'check_require_plugin_notice']);
-
-        } else {
-            $installer = new Shakir\WishlistQuotePriceAndNotifier\Installer\Installer();
-            $installer->run();
+            $admin_notice->check_require_plugin_notice();
         }
     }
 
