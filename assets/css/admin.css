@@ -1,0 +1,17 @@
+#wishlist-quote-table_length {
+    min-width: 200px !important;
+
+}
+#wishlist-quote-table_length select {
+    width: 30%;
+
+}
+.wqpn-wishlist-quote-filter {
+    display: flex;
+    align-items: center;
+}
+
+#wqpn-wishlist-quote-status {
+    min-width: 150px;
+    margin-right: 10px;
+}

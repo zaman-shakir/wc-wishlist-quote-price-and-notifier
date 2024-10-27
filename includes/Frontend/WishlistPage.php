@@ -152,6 +152,7 @@ class WishlistPage
             /**
              * status : submitted, accepted, declined, archived
             */
+
             if ($status === 'submitted' || $status === 'accepted' || $status === "rejected") {
                 return $this->display_submitted_wishlist($user_data);
             }

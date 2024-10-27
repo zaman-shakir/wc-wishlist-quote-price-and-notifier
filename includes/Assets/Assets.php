@@ -62,6 +62,12 @@ class Assets
                 'version' => filemtime(WC_WISHLIST_QUOTE_PRICE_AND_NOTIFIER_PATH . '/assets/js/wishlist.js'),
                 'deps'    => [ 'jquery' ]
             ],
+             // Add DataTables script
+            'datatables-js' => [
+                'src'     => 'https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js',
+                'version' => null,
+                'deps'    => [ 'jquery' ]
+            ],
         ];
     }
 
@@ -80,6 +86,11 @@ class Assets
             'wqpn-checkout-style' => [
                 'src'     => WC_WISHLIST_QUOTE_PRICE_AND_NOTIFIER_ASSETS . '/css/cart.css',
                 'version' => filemtime(WC_WISHLIST_QUOTE_PRICE_AND_NOTIFIER_PATH . '/assets/css/cart.css'),
+            ],
+            // Add DataTables CSS
+            'datatables-css' => [
+                'src'     => 'https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css',
+                'version' => null,
             ]
         ];
     }

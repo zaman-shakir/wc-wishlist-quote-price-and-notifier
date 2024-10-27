@@ -1,6 +1,7 @@
 <?php
 
 namespace Shakir\WishlistQuotePriceAndNotifier\Admin;
+
 // testing10 eleas
 /**
  * Class Admin_Notice
