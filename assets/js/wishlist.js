@@ -325,10 +325,6 @@
                         '<div class="spinner"><div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div></div>';
 
                     this.disabled = true;
-
-                    console.log("button clicked Request Data:", data);
-                    console.dir(this);
-                    console.log(this);
                     $.ajax({
                         url: url,
                         method: "POST",
@@ -342,6 +338,7 @@
                                         : "Add to Wishlist";
                                 this.disabled = false;
                                 wishlist_callback(responseData);
+                                $('#wqpn-wishlist-count').text(responseData.wishlist_count);
                             } catch (err) {
                                 console.warn(
                                     "Error parsing JSON response:",

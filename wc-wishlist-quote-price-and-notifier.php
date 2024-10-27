@@ -168,3 +168,4 @@ function wc_wishlist_quote_price_and_notifier()
 
 // kick-off the plugin
 wc_wishlist_quote_price_and_notifier();
+

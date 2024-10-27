@@ -58,7 +58,7 @@ class Installer
     public function wqpn_create_wishlist_page()
     {
         // Check if the page already exists
-        $page = get_page_by_path('my-wishlist');
+        $page = get_page_by_path('wqpn-my-wishlist');
         if ($page) {
             return; // Page already exists, no need to create it
         }

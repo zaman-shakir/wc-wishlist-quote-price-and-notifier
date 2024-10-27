@@ -38,14 +38,18 @@ class WishlistButtonHandler
         switch ($wishlist_action) {
             case 'add_to_wishlist':
                 self::add_to_wishlist($product_id);
+                $wishlist_count = self::update_wishlist_count('add');
                 break;
             case 'remove_from_wishlist':
                 self::remove_from_wishlist($product_id);
+                $wishlist_count = self::update_wishlist_count('remove');
                 break;
             default:
                 // Invalid wishlist_action, should not happen with the check above
                 wp_die(__('Invalid wishlist action', 'wc-wishlist-quote-and-price-notifier'));
         }
+
+
 
         $response = [
             'status' => 201,
@@ -54,6 +58,7 @@ class WishlistButtonHandler
             'wishlist_action' => $wishlist_action,
             'remove_class' => $remove_class,
             'add_class' => $add_class,
+            'wishlist_count' => $wishlist_count,
         ];
 
         Logger::get_instance()->write_log(wc_print_r($response, true), true);
@@ -62,13 +67,44 @@ class WishlistButtonHandler
         wp_die();
     }
 
+    public static function get_wishlist_count() {
+        // Check if the cookie exists
+        $wishlist = isset($_COOKIE['wqpn_wishlist']) ? json_decode(stripslashes($_COOKIE['wqpn_wishlist']), true) : [];
+
+        // Return 0 if the cookie doesn't exist or the wishlist is empty
+        return count($wishlist);
+    }
+    public static function update_wishlist_count($action = 'add') {
+        // Check if the wishlist cookie exists
+        if ( isset( $_COOKIE['wqpn_wishlist'] ) ) {
+            // Decode the cookie to retrieve the wishlist array
+            $wishlist = json_decode( stripslashes( $_COOKIE['wqpn_wishlist'] ), true );
+
+            // Count the number of items in the wishlist
+            $wishlist_count = count( $wishlist );
+
+            // Increase or decrease count based on the action
+            if ($action === 'add') {
+                $wishlist_count++;
+            } elseif ($action === 'remove' && $wishlist_count > 0) {
+                $wishlist_count--;
+            }
+
+            // Update the wishlist count cookie
+            setcookie('wqpn_wishlist_count', $wishlist_count, time() + 3600 * 24 * 30, '/'); // 30 days expiration
+            return $wishlist_count;
+        } else {
+            // If no wishlist exists, initialize count to 0 and set the cookie
+            setcookie('wqpn_wishlist_count', 0, time() + 3600 * 24 * 30, '/'); // 30 days expiration
+            return 0;
+        }
+    }
     private static function add_to_wishlist($product_id)
     {
         // Retrieve existing wishlist data from cookie or initialize an empty array
         $wishlist = isset($_COOKIE['wqpn_wishlist']) ? json_decode(stripslashes($_COOKIE['wqpn_wishlist']), true) : [];
         Logger::get_instance()->write_log("before adding item to wishlist in handler", true);
         Logger::get_instance()->write_log(wc_print_r($wishlist, $product_id, true), true);
-
         // Add product_id to the wishlist array if not already present
         // if (!in_array($product_id, $wishlist)) {
         //     $wishlist[] = $product_id;
@@ -88,6 +124,7 @@ class WishlistButtonHandler
         Logger::get_instance()->write_log(wc_print_r($wishlist, $product_id, true), true);
         // Save updated wishlist array to cookie
         setcookie('wqpn_wishlist', json_encode($wishlist), time() + 3600 * 24 * 30, '/'); // 30 days expiration
+
     }
 
     private static function remove_from_wishlist($product_id)
@@ -105,6 +142,8 @@ class WishlistButtonHandler
 
         // Save updated wishlist array to cookie
         setcookie('wqpn_wishlist', json_encode($wishlist), time() + 3600 * 24 * 30, '/'); // 30 days expiration
+
+
     }
 
 

@@ -2,15 +2,16 @@
 
 namespace Shakir\WishlistQuotePriceAndNotifier\Frontend;
 
+use Shakir\WishlistQuotePriceAndNotifier\Frontend\WishlistButtonHandler;
+
 class WishlistButton
 {
     public function __construct()
     {
         add_action('woocommerce_after_shop_loop_item', [$this, 'display_wishlist_button'], 20);
         add_action('woocommerce_before_add_to_cart_form', [$this, 'display_wishlist_button'], 35);
-
+        add_action('wp_footer', [$this, 'display_wishlist_icon'], 40);
     }
-
 
     public function display_wishlist_button()
     {
@@ -42,5 +43,20 @@ class WishlistButton
         // Check if the product_id is in the wishlist array
         return is_array($wishlist) && array_key_exists($product_id, $wishlist);
     }
+    public function display_wishlist_icon() {
+        // Get the wishlist URL and count
+       // $wishlist_url = get_wishlist_url();
+        $wishlist_count = WishlistButtonHandler::get_wishlist_count();
+        ?>
+        <div class="wishlist-icon-wrapper">
+            <a href="/wqpn-my-wishlist" class="wishlist-icon">
+                <span class="wqpn-wishlist-text">Wishlist</span>
+                <span class="wqpn-wishlist-count" id="wqpn-wishlist-count"><?php echo $wishlist_count; ?></span>
+            </a>
+        </div>
+        <?php
+    }
+
+
 
 }
