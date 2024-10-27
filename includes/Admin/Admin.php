@@ -11,9 +11,30 @@ class Admin
         add_action('admin_menu', [$this, 'add_menu_page']);
         add_action('wp_ajax_accept_offer', [$this, 'accept_offer']);
         add_action('wp_ajax_reject_offer', [$this, 'reject_offer']);
-
+        add_action('admin_footer', [$this, 'enqueue_datatables_init']);
     }
+    public function enqueue_datatables_init()
+    {
+        $screen = get_current_screen();
 
+        // Check if the current screen is your plugin's admin page
+        //if ($screen->id === 'wqpn-wishlist-quote-price') { // Replace with your actual screen ID
+        ?>
+            <script type="text/javascript">
+                jQuery(document).ready(function($) {
+                    console.log("initialize datatable");
+                    jQuery('#wishlist-quote-table').DataTable({
+                        "paging": true,
+                        "searching": true,
+                        "ordering": true,
+                        "pageLength": 10,
+                        "order": [[ 0, "asc" ]] // Order by first column ascending
+                    });
+                });
+            </script>
+            <?php
+       // }
+    }
     // Returns the singleton instance of the class
     public static function get_instance()
     {
@@ -125,23 +146,104 @@ class Admin
     }
     public function add_menu_page()
     {
+        // Main menu
         add_menu_page(
             'WQPN Wishlist & Quote Price', // Page title
             'WQPN Wishlist & Quote Price', // Menu title
             'manage_options', // Capability
             'wqpn-wishlist-quote-price', // Menu slug
-            [$this, 'render_settings_page'], // Callback
+            [$this, 'render_dashboard_menu_settings_page'], // Callback for dashboard
             'dashicons-heart', // Icon URL
             25 // Position
         );
+
+        // Submenus
+        add_submenu_page(
+            'wqpn-wishlist-quote-price', // Parent slug
+            'All Quotations/Dashboard',  // Page title
+            'Dashboard',                // Menu title
+            'manage_options',           // Capability
+            'wqpn-dashboard',           // Menu slug
+            [$this, 'render_dashboard_page']  // Callback function
+        );
+
+        add_submenu_page(
+            'wqpn-wishlist-quote-price',
+            'Settings',
+            'Settings',
+            'manage_options',
+            'wqpn-settings',
+            [$this, 'render_settings_page']  // Callback function for settings page
+        );
+
+        add_submenu_page(
+            'wqpn-wishlist-quote-price',
+            'Reports',
+            'Reports',
+            'manage_options',
+            'wqpn-reports',
+            [$this, 'render_reports_page']  // Callback function for reports page
+        );
+
+        add_submenu_page(
+            'wqpn-wishlist-quote-price',
+            'Messages',
+            'Messages',
+            'manage_options',
+            'wqpn-messages',
+            [$this, 'render_messages_page']  // Callback function for messages page
+        );
+    }
+
+    public function render_dashboard_page()
+    {
+        echo '<h1>Dashboard</h1>';
+        // Add your dashboard code here
     }
 
     public function render_settings_page()
     {
+        echo '<h1>Settings</h1>';
+        // Add your settings code here
+    }
+
+    public function render_reports_page()
+    {
+        echo '<h1>Reports</h1>';
+        // Add your reports code here
+    }
+
+    public function render_messages_page()
+    {
+        echo '<h1>Messages</h1>';
+        // Add your messages code here
+    }
+
+    public function render_dashboard_menu_settings_page()
+    {
         ?>
         <div class="wrap">
             <h1>WQPN Wishlist & Quote Price</h1>
-            <table class="wp-list-table widefat fixed striped">
+
+                <div class="wqpn-wishlist-quote-filter" style="margin-top:30px; margin-bottom:00px;">
+                <form method="POST">
+                <select name="wqpn-wishlist-quote-status" id="wqpn-wishlist-quote-status" class="regular-text">
+                    <option value="">Select Status</option>
+                    <option value="wqpn-all">All</option>
+                    <option value="wqpn-waiting-response">Waiting for response</option>
+                    <option value="wqpn-accepted">Accepted</option>
+                    <option value="wqpn-waiting-used">Waiting to be used</option>
+                    <option value="wqpn-offered-used">Offered price already used</option>
+                    <option value="wqpn-declined">Declined</option>
+                </select>
+                <button type="submit" class="button button-primary">Filter</button>
+                </form>
+            </div>
+
+
+        <br><br>
+        </div>
+            <table id="wishlist-quote-table" class="display compact" style="width:100%">
                 <thead>
                     <tr>
                         <th style="width:2%;">#</th>
@@ -155,7 +257,8 @@ class Admin
                 <tbody>
                 <?php
                 // Fetch and display data
-                $this->display_user_wishlists();
+                //var_dump($_POST);
+        $this->display_user_wishlists();
         ?>
                 </tbody>
             </table>
@@ -166,15 +269,77 @@ class Admin
     private function display_user_wishlists()
     {
         // $all_users_data = get_transient('wqpn_wishlist');
+        // get filter criteria
+        $filer_by = isset($_POST['wqpn-wishlist-quote-status']) ?? "wqpn-all";
+
+        // $filer_by == wqpn-all == only order by archived;
+        //$filer_by == wqpn-waiting-response ==  db status : submitted, archived : 0, used : 0;
+        //$filer_by == wqpn-accepted ==  db status : accepted, archived : 0, used : 0;
+        //$filer_by == wqpn-waiting-used ==  db status : accepted, archived : 0, used : 0;
+        //$filer_by == wqpn-offered-used ==  db status : accepted, archived : 0, used : 0;
+        //$filer_by == wqpn-declined ==  db status : accepted, archived : 0, used : 0;
+
+        $filer_by = isset($_POST['wqpn-wishlist-quote-status']) ? $_POST['wqpn-wishlist-quote-status'] : 'wqpn-all';
+
         global $wpdb;
         $table_name = $wpdb->prefix . 'wqpn_wishlist';
-        $all_users_data = $wpdb->get_results(
-            $wpdb->prepare(
-                // "SELECT * FROM $table_name WHERE archived = 0 AND user_id = %d LIMIT 1",
-                "SELECT * FROM $table_name Order by archived",
-            ),
-            ARRAY_A
-        );
+
+        // Define the query based on the selected filter
+        switch ($filer_by) {
+            case 'wqpn-waiting-response':
+                $query = $wpdb->prepare(
+                    "SELECT * FROM $table_name WHERE status = %s AND archived = %d AND used = %d ORDER BY archived",
+                    'submitted',
+                    0,
+                    0
+                );
+                break;
+            case 'wqpn-accepted':
+                $query = $wpdb->prepare(
+                    "SELECT * FROM $table_name WHERE status = %s AND archived = %d AND used = %d ORDER BY archived",
+                    'accepted',
+                    0,
+                    0
+                );
+                break;
+            case 'wqpn-waiting-used':
+                $query = $wpdb->prepare(
+                    "SELECT * FROM $table_name WHERE status = %s AND archived = %d AND used = %d ORDER BY archived",
+                    'accepted',
+                    0,
+                    0
+                );
+                break;
+            case 'wqpn-offered-used':
+                $query = $wpdb->prepare(
+                    "SELECT * FROM $table_name WHERE status = %s AND archived = %d AND used = %d ORDER BY archived",
+                    'accepted',
+                    0,
+                    0
+                );
+                break;
+            case 'wqpn-declined':
+                $query = $wpdb->prepare(
+                    "SELECT * FROM $table_name WHERE status = %s AND archived = %d AND used = %d ORDER BY archived",
+                    'declined',
+                    0,
+                    0
+                );
+                break;
+            default: // 'wqpn-all' or any other value
+                $query = "SELECT * FROM $table_name ORDER BY archived";
+                break;
+        }
+
+        $all_users_data = $wpdb->get_results($query, ARRAY_A);
+        // global $wpdb;
+        // $table_name = $wpdb->prefix . 'wqpn_wishlist';
+        // $all_users_data = $wpdb->get_results(
+        //     $wpdb->prepare(
+        //         "SELECT * FROM $table_name Order by archived",
+        //     ),
+        //     ARRAY_A
+        // );
 
         $row_number = 1;
 
