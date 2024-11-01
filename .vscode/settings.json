@@ -1,4 +1,7 @@
 {
+    "browserRefresh.browser": "Google Chrome", // The browser to refresh
+    "browserRefresh.delay": 250, // Delay after which ⌘R will be sent to the browser, in milliseconds
+    "browserRefresh.focus": false, // Keep the focu
     "sshfs.configpaths": [],
     "workbench.editor.showTabs": "multiple",
     "workbench.editor.enablePreview": false,
@@ -164,5 +167,7 @@
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "workbench.colorTheme": "Tomorrow Night Blue",
+    "workbench.colorTheme": "Tomorrow Night Blue"nabled, run the
+
+}
 
